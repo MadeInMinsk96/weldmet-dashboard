@@ -1755,8 +1755,15 @@
                 const parsedOrders = parseCSVData(csvText);
                 
                 if (parsedOrders.length > 0) {
+                    // ПОЛНАЯ ОЧИСТКА ПЕРЕД СОХРАНЕНИЕМ НОВЫХ ДАННЫХ
+                    localStorage.removeItem('ordersData');
+                    localStorage.removeItem('reportsData');
+                    localStorage.removeItem('issuesData');
+                    localStorage.removeItem('analyticsData');
+                    
+                    // Сохраняем только чистые данные из CSV
                     saveOrdersToStorage(parsedOrders);
-                    console.log(`✅ Загружено ${parsedOrders.length} заказов из CSV`);
+                    console.log(`✅ Загружено ${parsedOrders.length} заказов из CSV (чистые данные)`);
                     return;
                 }
             } catch (error) {
@@ -1864,6 +1871,7 @@
                 }
             };
 
+            // СОЗДАЕМ ПОЛНОСТЬЮ ЧИСТЫЙ ОБЪЕКТ ЗАКАЗА
             const order = {
                 id: `CSV_${orderNumber.replace(/[^a-zA-Z0-9]/g, '_')}`,
                 number: orderNumber,
@@ -1872,6 +1880,7 @@
                 date: shipmentDate || new Date().toISOString().split('T')[0],
                 currentSection: currentSection,
                 progress: progress,
+                // ЧИСТАЯ ИСТОРИЯ - только создание заказа
                 history: [{
                     action: 'created',
                     section: currentSection,
@@ -1879,6 +1888,10 @@
                     timestamp: new Date().toISOString(),
                     user: 'Система'
                 }],
+                // ПУСТЫЕ МАССИВЫ ДЛЯ ЧИСТОГО СТАРТА
+                issues: [], // Пустой массив проблем
+                reports: [], // Пустой массив отчетов
+                analytics: [], // Пустой массив аналитики
                 // Дополнительные поля для детальной карточки
                 manager: manager,
                 operationType: operationType,
@@ -1954,7 +1967,31 @@
         // Получение заказов из localStorage
         function getOrdersFromStorage() {
             const ordersData = localStorage.getItem('ordersData');
-            return ordersData ? JSON.parse(ordersData) : [];
+            if (!ordersData) return [];
+            
+            try {
+                const orders = JSON.parse(ordersData);
+                
+                // ПРОВЕРЯЕМ И ОЧИЩАЕМ КАЖДЫЙ ЗАКАЗ ОТ СТАРЫХ ДАННЫХ
+                return orders.map(order => {
+                    // Если в заказе нет чистых массивов - создаем их
+                    if (!Array.isArray(order.issues)) {
+                        order.issues = [];
+                    }
+                    if (!Array.isArray(order.reports)) {
+                        order.reports = [];
+                    }
+                    if (!Array.isArray(order.analytics)) {
+                        order.analytics = [];
+                    }
+                    
+                    // Возвращаем заказ с гарантированно чистыми данными
+                    return order;
+                });
+            } catch (error) {
+                console.error('Ошибка парсинга данных заказов:', error);
+                return [];
+            }
         }
 
         // Сохранение заказов в localStorage
@@ -1966,53 +2003,91 @@
         function clearAllCache() {
             if (confirm('⚠️ ВНИМАНИЕ!\n\nЭта операция полностью очистит все данные приложения:\n• Все заказы и их состояния\n• Все отчеты и аналитику\n• Все проблемы и история\n• Все кэшированные данные\n\nПродолжить?')) {
                 try {
-                    // Очищаем все глобальные переменные состояния
-                    currentUser = null;
-                    selectedOrderId = null;
-                    selectedSection = null;
-                    searchFilter = '';
-                    reportSearchFilter = '';
-                    currentReportTab = 'orders';
+                    console.log('🔄 Начинаем полную очистку кэша...');
                     
-                    // Останавливаем автообновление
-                    if (autoUpdateInterval) {
-                        clearInterval(autoUpdateInterval);
-                        autoUpdateInterval = null;
+                    // АГРЕССИВНАЯ ОЧИСТКА ГЛОБАЛЬНЫХ ПЕРЕМЕННЫХ
+                    window.currentUser = null;
+                    window.selectedOrderId = null;
+                    window.selectedSection = null;
+                    window.searchFilter = '';
+                    window.reportSearchFilter = '';
+                    window.currentReportTab = 'orders';
+                    
+                    // Останавливаем все процессы
+                    if (window.autoUpdateInterval) {
+                        clearInterval(window.autoUpdateInterval);
+                        window.autoUpdateInterval = null;
                     }
                     
-                    // Очищаем все данные localStorage - каждый ключ отдельно
-                    const allKeys = Object.keys(localStorage);
-                    allKeys.forEach(key => {
-                        localStorage.removeItem(key);
+                    // ОЧИСТКА ВСЕХ ТИПОВ STORAGE
+                    
+                    // 1. Специфичные ключи приложения
+                    const appKeys = [
+                        'ordersData', 'userProfile', 'reportsData', 
+                        'issuesData', 'analyticsData', 'appState',
+                        'orderHistory', 'sectionData', 'lastUpdate'
+                    ];
+                    appKeys.forEach(key => {
+                        try {
+                            localStorage.removeItem(key);
+                            sessionStorage.removeItem(key);
+                        } catch (e) {}
                     });
                     
-                    // Полная очистка localStorage
-                    localStorage.clear();
+                    // 2. Очищаем ВСЕ ключи localStorage
+                    try {
+                        const allKeys = Object.keys(localStorage);
+                        allKeys.forEach(key => localStorage.removeItem(key));
+                        localStorage.clear();
+                    } catch (e) {}
                     
-                    // Очищаем sessionStorage
-                    sessionStorage.clear();
+                    // 3. Очищаем sessionStorage
+                    try {
+                        sessionStorage.clear();
+                    } catch (e) {}
                     
-                    // Очищаем IndexedDB если используется
+                    // 4. Очищаем IndexedDB
                     if (window.indexedDB) {
-                        window.indexedDB.databases().then(dbs => {
-                            dbs.forEach(db => {
-                                window.indexedDB.deleteDatabase(db.name);
-                            });
-                        }).catch(() => {}); // Игнорируем ошибки IndexedDB
+                        try {
+                            window.indexedDB.databases().then(dbs => {
+                                dbs.forEach(db => {
+                                    window.indexedDB.deleteDatabase(db.name);
+                                });
+                            }).catch(() => {});
+                        } catch (e) {}
                     }
                     
-                    // Очищаем все cookies
-                    document.cookie.split(";").forEach(function(c) { 
-                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-                    });
+                    // 5. Очищаем все cookies
+                    try {
+                        document.cookie.split(";").forEach(function(c) { 
+                            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                        });
+                    } catch (e) {}
                     
-                    alert('✅ Кэш полностью очищен!\n\nВсе данные приложения удалены.\nСтраница будет перезагружена для чистого старта.');
+                    // 6. ОЧИСТКА DOM ЭЛЕМЕНТОВ
+                    try {
+                        // Очищаем содержимое контейнеров
+                        const containers = [
+                            'ordersContainer', 'reportsContent', 'analyticsContent',
+                            'detailStagesTimeline', 'detailHistory'
+                        ];
+                        containers.forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) element.innerHTML = '';
+                        });
+                    } catch (e) {}
                     
-                    // Принудительная перезагрузка без кэша
-                    window.location.reload(true);
+                    console.log('✅ Кэш полностью очищен');
+                    alert('✅ ПОЛНАЯ ОЧИСТКА ЗАВЕРШЕНА!\n\nВсе данные приложения удалены.\nСтраница будет перезагружена для чистого старта.');
+                    
+                    // 7. ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА
+                    setTimeout(() => {
+                        window.location.href = window.location.href + '?nocache=' + Date.now();
+                    }, 500);
+                    
                 } catch (error) {
                     console.error('Ошибка при очистке кэша:', error);
-                    alert('❌ Ошибка при очистке кэша. Попробуйте еще раз или перезагрузите страницу вручную.');
+                    alert('❌ Ошибка при очистке кэша.\n\nПопробуйте закрыть и открыть браузер заново.');
                 }
             }
         }
