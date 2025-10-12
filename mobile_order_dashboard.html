@@ -483,6 +483,17 @@
             background: #7f8c8d;
         }
 
+        /* Кнопка "Есть нюансы" на карточке */
+        .issue-btn-card {
+            background: #f39c12;
+            color: white;
+            font-size: 10px;
+        }
+
+        .issue-btn-card:hover {
+            background: #e67e22;
+        }
+
         /* Модальное окно для перемещения заказа */
         .modal {
             display: none;
@@ -1388,6 +1399,21 @@
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
             
+            // Проверяем URL параметры для автоматического поиска
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search');
+            if (searchParam) {
+                searchInput.value = searchParam;
+                searchFilter = searchParam.toLowerCase().trim();
+                clearBtn.style.display = 'flex';
+                
+                // Выполняем поиск после небольшой задержки для корректной загрузки
+                setTimeout(() => {
+                    filterOrders();
+                    showNotification(`🔍 Поиск по запросу: "${searchParam}"`, 'info', 3000);
+                }, 500);
+            }
+            
             searchInput.addEventListener('input', function(e) {
                 searchFilter = e.target.value.toLowerCase().trim();
                 
@@ -1468,21 +1494,15 @@
                 shipped: 0
             };
             
-            // Отображаем отфильтрованные заказы
+            // Отображаем отфильтрованные заказы БЕЗ ДУБЛЕЙ
             filteredOrders.forEach(order => {
-                // Все заказы всегда показываются в "Все заказы"
+                // Показываем заказ ТОЛЬКО в "Все заказы" при поиске, чтобы избежать дублей
                 const allOrdersContainer = document.getElementById('allOrdersList');
-                allOrdersContainer.appendChild(createOrderCard(order, true));
+                allOrdersContainer.appendChild(createOrderCard(order, false)); // Кнопка "Переместить" доступна
                 counts.all++;
                 
-                // Заказы в участках
-                if (order.currentSection) {
-                    const sectionContainer = document.getElementById(order.currentSection + 'List');
-                    if (sectionContainer) {
-                        sectionContainer.appendChild(createOrderCard(order, false));
-                        counts[order.currentSection]++;
-                    }
-                }
+                // При поиске НЕ дублируем заказы в секциях
+                // Заказы будут видны только в "Все заказы"
             });
             
             // Обновляем счетчики
@@ -1753,10 +1773,11 @@
                 counts.all++;
 
                 // Заказы в участках показываются только если они туда перемещены
+                // Кнопка "Переместить" теперь доступна во всех секциях
                 if (order.currentSection) {
                     const sectionContainer = document.getElementById(order.currentSection + 'List');
                     if (sectionContainer) {
-                        sectionContainer.appendChild(createOrderCard(order, false));
+                        sectionContainer.appendChild(createOrderCard(order, true)); // Кнопка "Переместить" доступна
                         counts[order.currentSection]++;
                     }
                 }
@@ -1840,7 +1861,7 @@
                 `;
             } else {
                 sectionOrders.forEach(order => {
-                    ordersHTML += createOrderCardHTML(order, section.key !== 'all');
+                    ordersHTML += createOrderCardHTML(order, false); // Кнопка "Переместить" всегда доступна
                 });
             }
             
@@ -1884,6 +1905,9 @@
                     <div class="order-actions">
                         ${!hideMoveButton ? `<button class="action-btn move-btn" onclick="openMoveModal('${order.id}')">Переместить</button>` : ''}
                         <button class="action-btn details-btn" onclick="openOrderDetail('${order.id}')">Детали</button>
+                        <button class="action-btn issue-btn-card" onclick="openIssueModalForOrder('${order.id}')" title="Добавить проблему">
+                            ⚠️ ${(order.issues && order.issues.length > 0) ? `(${order.issues.length})` : 'Нюансы'}
+                        </button>
                     </div>
                 </div>
             `;
@@ -1917,6 +1941,9 @@
                 <div class="order-actions">
                     ${showMoveButton ? `<button class="action-btn move-btn" onclick="openMoveModal('${order.id}')">Переместить</button>` : ''}
                     <button class="action-btn details-btn" onclick="openOrderDetail('${order.id}')">Детали</button>
+                    <button class="action-btn issue-btn-card" onclick="openIssueModalForOrder('${order.id}')" title="Добавить проблему">
+                        ⚠️ ${(order.issues && order.issues.length > 0) ? `(${order.issues.length})` : 'Нюансы'}
+                    </button>
                 </div>
             `;
 
@@ -2124,7 +2151,32 @@
         
         // === РАБОТА С ПРОБЛЕМАМИ ===
         
-        // Открытие модального окна для добавления проблемы
+        // Открытие модального окна для конкретного заказа (с карточки)
+        function openIssueModalForOrder(orderId) {
+            selectedOrderId = orderId;
+            
+            const orders = getOrdersFromStorage();
+            const order = orders.find(o => o.id === orderId);
+            
+            if (!order) {
+                showNotification('❌ Заказ не найден', 'error');
+                return;
+            }
+            
+            // Очищаем поле ввода
+            document.getElementById('issueDescription').value = '';
+            
+            // Открываем модальное окно
+            const modal = document.getElementById('issueModal');
+            modal.style.display = 'block';
+            
+            // Фокус на поле ввода
+            setTimeout(() => {
+                document.getElementById('issueDescription').focus();
+            }, 100);
+        }
+        
+        // Открытие модального окна для добавления проблемы (из детального просмотра)
         function openIssueModal() {
             if (!selectedOrderId) {
                 showNotification('❌ Заказ не выбран', 'error');

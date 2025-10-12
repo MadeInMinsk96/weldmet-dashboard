@@ -379,6 +379,23 @@
             align-items: center;
             font-size: 12px;
             color: #7f8c8d;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .issue-order-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .issue-order-btn:hover {
+            background: #2980b9;
         }
 
         /* Счетчики проблем */
@@ -868,6 +885,9 @@
                         <div class="issue-meta">
                             <span>Автор: ${issue.user}</span>
                             <span>${issue.resolved ? '✅ Решено' : '🔄 В работе'}</span>
+                            <button class="issue-order-btn" onclick="goToOrder('${issue.orderNumber}')">
+                                📋 Перейти к заказу
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1064,6 +1084,13 @@
             });
             
             return chainHTML;
+        }
+
+        // Переход к заказу с поиском
+        function goToOrder(orderNumber) {
+            // Открываем дашборд с поиском по номеру заказа
+            const searchQuery = encodeURIComponent(orderNumber);
+            window.location.href = `mobile_order_dashboard.html?search=${searchQuery}`;
         }
     </script>
 </body>
