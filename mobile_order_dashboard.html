@@ -93,6 +93,22 @@
             background: #c0392b;
         }
 
+        .clear-cache-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .clear-cache-btn:hover {
+            background: #8e44ad;
+        }
+
         /* Основной контент */
         .main-content {
             margin-top: 80px;
@@ -868,6 +884,13 @@
             font-size: 12px;
             color: #7f8c8d;
         }
+
+        .timeline-empty {
+            text-align: center;
+            padding: 20px;
+            color: #95a5a6;
+            font-style: italic;
+        }
         
         /* Кнопка "Есть нюансы" */
         .order-detail-actions {
@@ -1211,6 +1234,7 @@
                 <div class="user-name" id="userName"></div>
                 <div class="user-role">Менеджер производства</div>
             </div>
+            <button class="clear-cache-btn" onclick="clearAllCache()" title="Очистить все данные для нового цикла работы">🗑️ Очистить кэш</button>
             <button class="logout-btn" onclick="logout()">Выйти</button>
         </div>
     </div>
@@ -1380,10 +1404,7 @@
                             <div class="detail-info-value" id="detailShipmentDate">-</div>
                         </div>
                         
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">Приоритет</div>
-                            <div class="detail-info-value" id="detailPriority">-</div>
-                        </div>
+
                         
                         <div class="detail-info-item">
                             <div class="detail-info-label">Статус</div>
@@ -1477,14 +1498,15 @@
         let reportSearchFilter = '';
         let currentReportTab = 'orders';
 
-        // Производственные участки
+        // Производственные участки (для детальной карточки и логики)
         const SECTIONS = {
             cutting: { name: 'Резка', icon: '🔪', order: 1 },
-            cleaning: { name: 'Зачистка/Травление', icon: '🧹', order: 2 },
-            welding: { name: 'Сварка', icon: '⚡', order: 3 },
-            painting: { name: 'Покраска', icon: '🎨', order: 4 },
-            warehouse: { name: 'Склад', icon: '📦', order: 5 },
-            shipped: { name: 'Отгружено', icon: '🚛', order: 6 }
+            cleaning: { name: 'Зачистка', icon: '🧹', order: 2 },
+            bending: { name: 'Гибка', icon: '📐', order: 3 },
+            welding: { name: 'Сварка', icon: '⚡', order: 4 },
+            painting: { name: 'Покраска', icon: '🎨', order: 5 },
+            warehouse: { name: 'Склад', icon: '📦', order: 6 },
+            shipped: { name: 'Отгружено', icon: '🚛', order: 7 }
         };
 
         // Инициализация приложения
@@ -1818,6 +1840,30 @@
                 progress = currentSection ? calculateProgressBySection(currentSection) : 0;
             }
 
+            // Парсим данные этапов производства из таблицы
+            const productionStages = {
+                cutting: {
+                    estimatedTime: columns[6] || '',
+                    readiness: columns[7] || ''
+                },
+                cleaning: {
+                    estimatedTime: columns[8] || '',
+                    readiness: columns[9] || ''
+                },
+                bending: {
+                    estimatedTime: columns[10] || '',
+                    readiness: columns[11] || ''
+                },
+                welding: {
+                    estimatedTime: columns[12] || '',
+                    readiness: columns[13] || ''
+                },
+                painting: {
+                    estimatedTime: columns[14] || '',
+                    readiness: columns[15] || ''
+                }
+            };
+
             const order = {
                 id: `CSV_${orderNumber.replace(/[^a-zA-Z0-9]/g, '_')}`,
                 number: orderNumber,
@@ -1838,7 +1884,8 @@
                 operationType: operationType,
                 shipmentDate: shipmentDate,
                 shipmentStatus: shipmentStatus,
-                priority: getPriorityFromOperationType(operationType)
+                // Данные этапов производства из таблицы
+                productionStages: productionStages
             };
 
             return order;
@@ -1913,6 +1960,34 @@
         // Сохранение заказов в localStorage
         function saveOrdersToStorage(orders) {
             localStorage.setItem('ordersData', JSON.stringify(orders));
+        }
+
+        // Полная очистка кэша для подготовки к новому циклу работы
+        function clearAllCache() {
+            if (confirm('⚠️ ВНИМАНИЕ!\n\nЭта операция полностью очистит все данные приложения:\n• Все заказы и их состояния\n• Все отчеты и аналитику\n• Все проблемы и история\n\nПродолжить?')) {
+                try {
+                    // Очищаем все данные localStorage
+                    localStorage.removeItem('ordersData');
+                    localStorage.removeItem('userProfile');
+                    localStorage.removeItem('reportsData');
+                    localStorage.removeItem('issuesData');
+                    localStorage.removeItem('analyticsData');
+                    
+                    // Очищаем весь localStorage (на всякий случай)
+                    localStorage.clear();
+                    
+                    // Очищаем sessionStorage
+                    sessionStorage.clear();
+                    
+                    alert('✅ Кэш полностью очищен!\n\nПриложение готово к новому циклу работы.\nСтраница будет перезагружена.');
+                    
+                    // Перезагружаем страницу для полного обновления
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Ошибка при очистке кэша:', error);
+                    alert('❌ Ошибка при очистке кэша. Попробуйте еще раз.');
+                }
+            }
         }
 
         // Загрузка и отображение заказов
@@ -2300,7 +2375,7 @@
             document.getElementById('detailManager').textContent = order.manager || order.client || 'Не указан';
             document.getElementById('detailOperationType').textContent = order.operationType || order.product || 'Не указан';
             document.getElementById('detailShipmentDate').textContent = order.shipmentDate || formatDate(order.date) || 'Не указана';
-            document.getElementById('detailPriority').textContent = getPriorityText(order.priority);
+
             document.getElementById('detailStatus').textContent = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
             document.getElementById('detailProgress').textContent = `${calculateOrderProgress(order)}%`;
 
@@ -2485,26 +2560,38 @@
             const container = document.getElementById('detailStagesTimeline');
             container.innerHTML = '';
             
-            // Определяем какие участки будут работать с заказом на основе operationType
-            const workingSections = getWorkingSectionsForOrder(order);
+            // Если нет данных этапов производства, показываем пустое состояние
+            if (!order.productionStages) {
+                container.innerHTML = '<div class="timeline-empty">Нет данных об этапах производства</div>';
+                return;
+            }
             
-            workingSections.forEach(sectionKey => {
-                const section = SECTIONS[sectionKey];
+            // Определяем этапы производства ТОЛЬКО из данных таблицы
+            const tableStages = [
+                { key: 'cutting', name: 'Резка', icon: '🔪' },
+                { key: 'cleaning', name: 'Зачистка', icon: '🧹' },
+                { key: 'bending', name: 'Гибка', icon: '📐' },
+                { key: 'welding', name: 'Сварка', icon: '⚡' },
+                { key: 'painting', name: 'Покраска', icon: '🎨' }
+            ];
+            
+            // Отображаем только те этапы, где есть расчетное время
+            tableStages.forEach(stage => {
+                const stageData = order.productionStages[stage.key];
+                if (!stageData || !stageData.estimatedTime || stageData.estimatedTime === '0' || stageData.estimatedTime === '') {
+                    return; // Пропускаем этапы без расчетного времени
+                }
+                
+                // Определяем статус на основе данных таблицы
                 let status = 'pending';
                 let subtitle = 'Ожидает';
                 
-                if (order.currentSection === sectionKey) {
-                    status = 'current';
-                    subtitle = 'В работе';
-                } else {
-                    // Проверяем, прошел ли заказ этот этап
-                    const sectionOrder = section.order;
-                    const currentOrder = order.currentSection ? SECTIONS[order.currentSection].order : 0;
-                    
-                    if (sectionOrder < currentOrder) {
-                        status = 'completed';
-                        subtitle = 'Готово'; // Изменили на "Готово" как указано в требованиях
-                    }
+                if (stageData.readiness && stageData.readiness.toLowerCase() === 'готово') {
+                    status = 'completed';
+                    subtitle = 'Готово';
+                } else if (stageData.estimatedTime && stageData.estimatedTime !== '0') {
+                    status = 'pending';
+                    subtitle = `Время: ${stageData.estimatedTime}`;
                 }
                 
                 const timelineItem = document.createElement('div');
@@ -2512,16 +2599,21 @@
                 
                 timelineItem.innerHTML = `
                     <div class="timeline-icon ${status}">
-                        ${status === 'completed' ? '✓' : status === 'current' ? '⚙️' : section.icon}
+                        ${status === 'completed' ? '✓' : stage.icon}
                     </div>
                     <div class="timeline-content">
-                        <div class="timeline-title">${section.name}</div>
+                        <div class="timeline-title">${stage.name}</div>
                         <div class="timeline-subtitle">${subtitle}</div>
                     </div>
                 `;
                 
                 container.appendChild(timelineItem);
             });
+            
+            // Если нет этапов с расчетным временем
+            if (container.children.length === 0) {
+                container.innerHTML = '<div class="timeline-empty">Этапы производства не назначены</div>';
+            }
         }
         
         // Определение участков, которые будут работать с заказом
