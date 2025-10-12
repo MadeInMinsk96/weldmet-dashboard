@@ -478,6 +478,31 @@
             background: #95a5a6;
             color: white;
         }
+        
+        /* Кнопка копирования номера заказа */
+        .copy-order-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .copy-order-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        .copy-order-btn:active {
+            transform: scale(0.95);
+        }
 
         .details-btn:hover {
             background: #7f8c8d;
@@ -1229,16 +1254,7 @@
                     <div id="allOrdersList" class="orders-list"></div>
                 </div>
 
-                <!-- Резка -->
-                <div class="section-column">
-                    <div class="section-header">
-                        <div class="section-title">
-                            🔪 Резка
-                            <span class="section-count" id="cuttingCount">0</span>
-                        </div>
-                    </div>
-                    <div id="cuttingList" class="orders-list"></div>
-                </div>
+
 
                 <!-- Зачистка/Травление -->
                 <div class="section-column">
@@ -1317,7 +1333,7 @@
             </div>
             
             <div class="section-buttons">
-                <button class="section-btn" data-section="cutting">🔪 Резка</button>
+
                 <button class="section-btn" data-section="cleaning">🧹 Зачистка/Травление</button>
                 <button class="section-btn" data-section="welding">⚡ Сварка</button>
                 <button class="section-btn" data-section="painting">🎨 Покраска</button>
@@ -1645,7 +1661,6 @@
             // Счетчики
             const counts = {
                 all: 0,
-                cutting: 0,
                 cleaning: 0,
                 welding: 0,
                 painting: 0,
@@ -1653,15 +1668,11 @@
                 shipped: 0
             };
             
-            // Отображаем отфильтрованные заказы БЕЗ ДУБЛЕЙ
+            // При поиске показываем результаты только в "Все заказы"
             filteredOrders.forEach(order => {
-                // Показываем заказ ТОЛЬКО в "Все заказы" при поиске, чтобы избежать дублей
                 const allOrdersContainer = document.getElementById('allOrdersList');
-                allOrdersContainer.appendChild(createOrderCard(order, false)); // Кнопка "Переместить" доступна
+                allOrdersContainer.appendChild(createOrderCard(order, true)); // Кнопка "Переместить" доступна
                 counts.all++;
-                
-                // При поиске НЕ дублируем заказы в секциях
-                // Заказы будут видны только в "Все заказы"
             });
             
             // Обновляем счетчики
@@ -1798,9 +1809,8 @@
                 currentSection = 'warehouse';
                 progress = 85;
             } else {
-                // Определяем участок по операциям
-                if (operationType.includes('Р')) currentSection = 'cutting';
-                else if (operationType.includes('ПК') || operationType.includes('Пк')) currentSection = 'painting';
+                // Определяем участок по операциям (исключаем резку из интерфейса)
+                if (operationType.includes('ПК') || operationType.includes('Пк')) currentSection = 'painting';
                 else if (operationType.includes('Св')) currentSection = 'welding';
                 else if (operationType.includes('Г')) currentSection = 'cleaning';
                 else currentSection = null;
@@ -1851,12 +1861,11 @@
         // Расчет прогресса по участку
         function calculateProgressBySection(section) {
             const progressMap = {
-                cutting: 17,      // 1/6 * 100
-                cleaning: 33,     // 2/6 * 100
-                welding: 50,      // 3/6 * 100
-                painting: 67,     // 4/6 * 100
-                warehouse: 85,    // 5/6 * 100
-                shipped: 100      // 6/6 * 100
+                cleaning: 20,     // 1/5 * 100
+                welding: 40,      // 2/5 * 100
+                painting: 60,     // 3/5 * 100
+                warehouse: 80,    // 4/5 * 100
+                shipped: 100      // 5/5 * 100
             };
             return progressMap[section] || 0;
         }
@@ -1916,7 +1925,6 @@
             // Счетчики для каждого раздела
             const counts = {
                 all: 0,
-                cutting: 0,
                 cleaning: 0,
                 welding: 0,
                 painting: 0,
@@ -1926,20 +1934,29 @@
 
             // Отображаем заказы
             orders.forEach(order => {
-                // Все заказы всегда показываются в "Все заказы"
+                // Все заказы ВСЕГДА показываются в "Все заказы" для начала работы
                 const allOrdersContainer = document.getElementById('allOrdersList');
                 allOrdersContainer.appendChild(createOrderCard(order, true));
                 counts.all++;
 
-                // Заказы в участках показываются только если они туда перемещены
-                // Кнопка "Переместить" теперь доступна во всех секциях
-                if (order.currentSection) {
+                // Заказы в участках показываются ТОЛЬКО после явного перемещения
+                // Это обеспечивает фиксацию перемещений с завтрашнего дня
+                if (order.currentSection && order.history && order.history.some(h => h.action === 'moved')) {
+                    // Показываем заказ в участке только если он был явно перемещен
                     const sectionContainer = document.getElementById(order.currentSection + 'List');
                     if (sectionContainer) {
-                        sectionContainer.appendChild(createOrderCard(order, true)); // Кнопка "Переместить" доступна
+                        sectionContainer.appendChild(createOrderCard(order, true));
+                        counts[order.currentSection]++;
+                    }
+                } else if (order.currentSection && !order.history) {
+                    // Старые заказы без истории - показываем для совместимости
+                    const sectionContainer = document.getElementById(order.currentSection + 'List');
+                    if (sectionContainer) {
+                        sectionContainer.appendChild(createOrderCard(order, true));
                         counts[order.currentSection]++;
                     }
                 }
+                // Новые заказы без currentSection будут только в "Все заказы"
             });
 
             // Обновляем счетчики
@@ -1955,7 +1972,6 @@
         // Очистка всех списков заказов
         function clearAllOrderLists() {
             document.getElementById('allOrdersList').innerHTML = '';
-            document.getElementById('cuttingList').innerHTML = '';
             document.getElementById('cleaningList').innerHTML = '';
             document.getElementById('weldingList').innerHTML = '';
             document.getElementById('paintingList').innerHTML = '';
@@ -1966,7 +1982,6 @@
         // Обновление счетчиков
         function updateCounters(counts) {
             document.getElementById('allOrdersCount').textContent = counts.all;
-            document.getElementById('cuttingCount').textContent = counts.cutting;
             document.getElementById('cleaningCount').textContent = counts.cleaning;
             document.getElementById('weldingCount').textContent = counts.welding;
             document.getElementById('paintingCount').textContent = counts.painting;
@@ -1982,7 +1997,6 @@
             // Создаем колонки для свайп-навигации
             const sections = [
                 { key: 'all', name: 'Все заказы', icon: '📋', list: 'allOrdersList' },
-                { key: 'cutting', name: 'Резка', icon: '🔪', list: 'cuttingList' },
                 { key: 'cleaning', name: 'Зачистка/Травление', icon: '🧹', list: 'cleaningList' },
                 { key: 'welding', name: 'Сварка', icon: '⚡', list: 'weldingList' },
                 { key: 'painting', name: 'Покраска', icon: '🎨', list: 'paintingList' },
@@ -2005,7 +2019,11 @@
                 sectionOrders = orders;
                 count = orders.length;
             } else {
-                sectionOrders = orders.filter(order => order.currentSection === section.key);
+                // Показываем заказы в участках только после явного перемещения
+                sectionOrders = orders.filter(order => {
+                    return order.currentSection === section.key && 
+                           ((order.history && order.history.some(h => h.action === 'moved')) || !order.history);
+                });
                 count = sectionOrders.length;
             }
             
@@ -2050,7 +2068,7 @@
                 <div class="order-card" data-order-id="${order.id}">
                     <div class="order-header">
                         <div class="order-number">${order.number}</div>
-                        <div class="priority-badge ${priorityClass}">${priorityText}</div>
+                        <button class="copy-order-btn" onclick="copyOrderNumber('${order.number}')" title="Скопировать номер заказа">📋</button>
                     </div>
                     <div class="order-client">👤 ${order.client || order.manager || 'Не указан'}</div>
                     <div class="order-product">📦 ${order.product || order.operationType || 'Не указано'}</div>
@@ -2086,7 +2104,7 @@
             card.innerHTML = `
                 <div class="order-header">
                     <div class="order-number">${order.number}</div>
-                    <div class="priority-badge ${priorityClass}">${priorityText}</div>
+                    <button class="copy-order-btn" onclick="copyOrderNumber('${order.number}')" title="Скопировать номер заказа">📋</button>
                 </div>
                 <div class="order-client">👤 ${order.client || order.manager || 'Не указан'}</div>
                 <div class="order-product">📦 ${order.product || order.operationType || 'Не указано'}</div>
@@ -2152,7 +2170,7 @@
 
         // Показ пустых разделов
         function showEmptySections(counts) {
-            const sections = ['cutting', 'cleaning', 'welding', 'painting', 'warehouse', 'shipped'];
+            const sections = ['cleaning', 'welding', 'painting', 'warehouse', 'shipped'];
             
             sections.forEach(section => {
                 const container = document.getElementById(section + 'List');
@@ -2320,6 +2338,23 @@
             selectedOrderId = null;
         }
         
+        // Копирование номера заказа
+        async function copyOrderNumber(orderNumber) {
+            try {
+                await navigator.clipboard.writeText(orderNumber);
+                showNotification(`📋 Номер заказа "${orderNumber}" скопирован`, 'success', 2000);
+            } catch (err) {
+                // Фолбэк для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = orderNumber;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification(`📋 Номер заказа "${orderNumber}" скопирован`, 'success', 2000);
+            }
+        }
+        
         // === РАБОТА С ПРОБЛЕМАМИ ===
         
         // Открытие модального окна для конкретного заказа (с карточки)
@@ -2450,9 +2485,10 @@
             const container = document.getElementById('detailStagesTimeline');
             container.innerHTML = '';
             
-            const sectionKeys = Object.keys(SECTIONS);
+            // Определяем какие участки будут работать с заказом на основе operationType
+            const workingSections = getWorkingSectionsForOrder(order);
             
-            sectionKeys.forEach(sectionKey => {
+            workingSections.forEach(sectionKey => {
                 const section = SECTIONS[sectionKey];
                 let status = 'pending';
                 let subtitle = 'Ожидает';
@@ -2467,7 +2503,7 @@
                     
                     if (sectionOrder < currentOrder) {
                         status = 'completed';
-                        subtitle = 'Завершено';
+                        subtitle = 'Готово'; // Изменили на "Готово" как указано в требованиях
                     }
                 }
                 
@@ -2486,6 +2522,38 @@
                 
                 container.appendChild(timelineItem);
             });
+        }
+        
+        // Определение участков, которые будут работать с заказом
+        function getWorkingSectionsForOrder(order) {
+            const operationType = order.operationType || order.product || '';
+            const workingSections = [];
+            
+            // Проверяем каждый тип операции
+            if (operationType.includes('Р')) {
+                workingSections.push('cutting'); // Резка
+            }
+            
+            if (operationType.includes('Г')) {
+                workingSections.push('cleaning'); // Зачистка/Травление
+            }
+            
+            if (operationType.includes('Св')) {
+                workingSections.push('welding'); // Сварка
+            }
+            
+            if (operationType.includes('Пк') || operationType.includes('ПК')) {
+                workingSections.push('painting'); // Покраска
+            }
+            
+            // Все заказы проходят через склад и отгрузку
+            workingSections.push('warehouse');
+            workingSections.push('shipped');
+            
+            // Сортируем участки по порядку выполнения
+            workingSections.sort((a, b) => SECTIONS[a].order - SECTIONS[b].order);
+            
+            return workingSections;
         }
 
         // Отображение истории изменений
@@ -2842,7 +2910,7 @@
                         </div>
                         
                         <div style="margin-bottom: 10px; color: #7f8c8d; font-size: 14px;">
-                            <strong>Клиент:</strong> ${issue.orderClient} | <strong>Товар:</strong> ${issue.orderProduct}
+                            <strong>Менеджер:</strong> ${issue.orderClient} | <strong>Виды операций:</strong> ${issue.orderProduct}
                         </div>
                         
                         <div class="issue-description">

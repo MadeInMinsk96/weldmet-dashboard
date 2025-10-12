@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подготовка заказов для отслеживания перемещений</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #17a2b8;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f39c12;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .results {
+            margin-top: 20px;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Подготовка системы заказов</h1>
+        
+        <div class="info">
+            <strong>Информация:</strong><br>
+            Этот инструмент подготавливает систему заказов для корректной работы с отслеживанием перемещений.
+            Все изменения вступят в силу с завтрашнего дня.
+        </div>
+        
+        <div class="warning">
+            <strong>Что изменилось:</strong><br>
+            ✅ Исправлены ошибки в разделе "Проблемы" (Менеджер вместо Клиент, Виды операций вместо Товар)<br>
+            ✅ Убраны приоритеты в карточках заказов<br>
+            ✅ Добавлена кнопка копирования номера заказа<br>
+            ✅ В карточке заказа отображаются только рабочие участки<br>
+            ✅ Все заказы начинают работу во вкладке "Все заказы"
+        </div>
+        
+        <button class="btn" onclick="checkCurrentOrders()">📊 Проверить текущие заказы</button>
+        <button class="btn" onclick="prepareOrdersForTracking()">🔄 Подготовить заказы для отслеживания</button>
+        <button class="btn" onclick="addTestOrders()">➕ Добавить тестовые заказы</button>
+        <button class="btn btn-danger" onclick="clearAllOrders()">🗑️ Очистить все заказы</button>
+        <button class="btn" onclick="openDashboard()">🚀 Перейти к дашборду</button>
+        
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        function showResults(message) {
+            const results = document.getElementById('results');
+            results.textContent = message;
+            results.style.display = 'block';
+        }
+
+        function checkCurrentOrders() {
+            const orders = JSON.parse(localStorage.getItem('ordersData') || '[]');
+            
+            let report = `📋 ТЕКУЩЕЕ СОСТОЯНИЕ ЗАКАЗОВ:\n\n`;
+            report += `Всего заказов: ${orders.length}\n\n`;
+            
+            if (orders.length === 0) {
+                report += `Заказы отсутствуют.\n`;
+            } else {
+                orders.forEach((order, index) => {
+                    report += `${index + 1}. ${order.number}\n`;
+                    report += `   Менеджер: ${order.manager || order.client || 'Не указан'}\n`;
+                    report += `   Операции: ${order.operationType || order.product || 'Не указаны'}\n`;
+                    report += `   Участок: ${order.currentSection || 'Не назначен'}\n`;
+                    report += `   Перемещался: ${order.history && order.history.some(h => h.action === 'moved') ? 'Да' : 'Нет'}\n`;
+                    report += `   Проблем: ${order.issues ? order.issues.length : 0}\n\n`;
+                });
+            }
+            
+            showResults(report);
+        }
+
+        function prepareOrdersForTracking() {
+            const orders = JSON.parse(localStorage.getItem('ordersData') || '[]');
+            let prepared = 0;
+            
+            orders.forEach(order => {
+                // Убираем currentSection у заказов без истории перемещений
+                if (order.currentSection && (!order.history || !order.history.some(h => h.action === 'moved'))) {
+                    order.currentSection = null;
+                    prepared++;
+                }
+                
+                // Инициализируем историю если её нет
+                if (!order.history) {
+                    order.history = [{
+                        action: 'created',
+                        section: null,
+                        sectionName: 'Все заказы',
+                        timestamp: new Date().toISOString(),
+                        user: 'Система'
+                    }];
+                }
+            });
+            
+            localStorage.setItem('ordersData', JSON.stringify(orders));
+            
+            let report = `✅ ПОДГОТОВКА ЗАВЕРШЕНА!\n\n`;
+            report += `Обработано заказов: ${orders.length}\n`;
+            report += `Перемещено в "Все заказы": ${prepared}\n\n`;
+            report += `Теперь все заказы начинают работу во вкладке "Все заказы".\n`;
+            report += `С завтрашнего дня все перемещения будут фиксироваться.\n`;
+            
+            showResults(report);
+        }
+
+        function addTestOrders() {
+            const testOrders = [
+                {
+                    id: 'TEST_001',
+                    number: 'TEST-001',
+                    manager: 'Иванов И.И.',
+                    operationType: 'РГСв',
+                    date: new Date().toISOString().split('T')[0],
+                    currentSection: null,
+                    history: [{
+                        action: 'created',
+                        section: null,
+                        sectionName: 'Все заказы',
+                        timestamp: new Date().toISOString(),
+                        user: 'Система'
+                    }]
+                },
+                {
+                    id: 'TEST_002',
+                    number: 'TEST-002',
+                    manager: 'Петров П.П.',
+                    operationType: 'РПк',
+                    date: new Date().toISOString().split('T')[0],
+                    currentSection: null,
+                    history: [{
+                        action: 'created',
+                        section: null,
+                        sectionName: 'Все заказы',
+                        timestamp: new Date().toISOString(),
+                        user: 'Система'
+                    }],
+                    issues: [{
+                        description: 'Нужны дополнительные материалы для покраски',
+                        timestamp: new Date().toISOString(),
+                        user: 'Петров П.П.',
+                        resolved: false
+                    }]
+                }
+            ];
+            
+            const existingOrders = JSON.parse(localStorage.getItem('ordersData') || '[]');
+            const allOrders = [...existingOrders, ...testOrders];
+            localStorage.setItem('ordersData', JSON.stringify(allOrders));
+            
+            let report = `✅ ТЕСТОВЫЕ ЗАКАЗЫ ДОБАВЛЕНЫ!\n\n`;
+            report += `Добавлено заказов: ${testOrders.length}\n`;
+            report += `Всего заказов в системе: ${allOrders.length}\n\n`;
+            report += `TEST-001: Операции РГСв (Резка, Зачистка, Сварка)\n`;
+            report += `TEST-002: Операции РПк (Резка, Покраска) + 1 проблема\n`;
+            
+            showResults(report);
+        }
+
+        function clearAllOrders() {
+            if (confirm('Вы уверены, что хотите удалить ВСЕ заказы? Это действие нельзя отменить!')) {
+                localStorage.removeItem('ordersData');
+                showResults('🗑️ Все заказы удалены.');
+            }
+        }
+
+        function openDashboard() {
+            window.open('mobile_order_dashboard.html', '_blank');
+        }
+
+        // Автоматическая проверка при загрузке
+        window.addEventListener('load', () => {
+            checkCurrentOrders();
+        });
+    </script>
+</body>
+</html>
