@@ -59,6 +59,7 @@
         <h3>📦 Тесты данных заказов</h3>
         <button class="btn" onclick="clearOrders()">Очистить заказы</button>
         <button class="btn" onclick="createTestOrders()">Создать тестовые заказы</button>
+        <button class="btn" onclick="loadFromCSV()">Загрузить из CSV</button>
         <button class="btn" onclick="viewOrders()">Показать заказы</button>
         <div id="ordersStatus" class="status info">Нажмите "Показать заказы"</div>
     </div>
@@ -180,6 +181,164 @@
             localStorage.setItem('ordersData', JSON.stringify(testOrders));
             document.getElementById('ordersStatus').innerHTML = '✅ Создано ' + testOrders.length + ' тестовых заказа';
             document.getElementById('ordersStatus').className = 'status success';
+        }
+
+        // Загрузка данных из CSV файла
+        async function loadFromCSV() {
+            const statusEl = document.getElementById('ordersStatus');
+            statusEl.innerHTML = '⏳ Загрузка данных из CSV...';
+            statusEl.className = 'status info';
+            
+            try {
+                const response = await fetch('./orders_data.csv');
+                if (!response.ok) {
+                    throw new Error('Файл CSV не найден');
+                }
+                
+                const csvText = await response.text();
+                const parsedOrders = parseCSVData(csvText);
+                
+                if (parsedOrders.length > 0) {
+                    localStorage.setItem('ordersData', JSON.stringify(parsedOrders));
+                    statusEl.innerHTML = `✅ Загружено ${parsedOrders.length} заказов из CSV файла`;
+                    statusEl.className = 'status success';
+                } else {
+                    statusEl.innerHTML = '⚠️ CSV файл пуст или содержит некорректные данные';
+                    statusEl.className = 'status error';
+                }
+            } catch (error) {
+                statusEl.innerHTML = `❌ Ошибка загрузки CSV: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Парсинг CSV данных (копия функции из дашборда)
+        function parseCSVData(csvText) {
+            const lines = csvText.split('\n');
+            const orders = [];
+            
+            // Пропускаем заголовки (первые 9 строк)
+            for (let i = 9; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const columns = parseCSVLine(line);
+                if (columns.length < 17) continue;
+                
+                const order = parseOrderFromCSV(columns);
+                if (order && order.number) {
+                    orders.push(order);
+                }
+            }
+            
+            return orders;
+        }
+
+        // Парсинг строки CSV
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        // Парсинг заказа из CSV строки
+        function parseOrderFromCSV(columns) {
+            const shipmentStatus = columns[1] || '';
+            const manager = columns[2] || '';
+            const orderNumber = columns[3] || '';
+            const operationType = columns[4] || '';
+            const shipmentDate = columns[5] || '';
+            
+            if (!orderNumber || orderNumber.includes('Администрация') || orderNumber.includes('Простой')) {
+                return null;
+            }
+
+            // Определяем текущий участок на основе статуса
+            let currentSection = null;
+            let progress = 0;
+            
+            if (shipmentStatus === 'Отгружено') {
+                currentSection = 'shipped';
+                progress = 100;
+            } else if (shipmentStatus === 'Готово') {
+                currentSection = 'warehouse';
+                progress = 85;
+            } else {
+                // Определяем участок по операциям
+                if (operationType.includes('Р')) currentSection = 'cutting';
+                else if (operationType.includes('ПК') || operationType.includes('Пк')) currentSection = 'painting';
+                else if (operationType.includes('Св')) currentSection = 'welding';
+                else if (operationType.includes('Г')) currentSection = 'cleaning';
+                else currentSection = null;
+                
+                progress = currentSection ? calculateProgressBySection(currentSection) : 0;
+            }
+
+            const order = {
+                id: `CSV_${orderNumber.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                number: orderNumber,
+                client: manager,
+                product: operationType,
+                date: shipmentDate || new Date().toISOString().split('T')[0],
+                currentSection: currentSection,
+                progress: progress,
+                history: [{
+                    action: 'created',
+                    section: currentSection,
+                    sectionName: currentSection ? SECTIONS[currentSection].name : 'Новый заказ',
+                    timestamp: new Date().toISOString(),
+                    user: 'Система'
+                }],
+                // Дополнительные поля для детальной карточки
+                manager: manager,
+                operationType: operationType,
+                shipmentDate: shipmentDate,
+                shipmentStatus: shipmentStatus,
+                priority: getPriorityFromOperationType(operationType)
+            };
+
+            return order;
+        }
+
+        // Определение приоритета по типу операций
+        function getPriorityFromOperationType(operationType) {
+            if (!operationType) return 'medium';
+            
+            // Сложные операции = высокий приоритет
+            if (operationType.includes('Св') && operationType.includes('Пк')) return 'high';
+            if (operationType.length > 3) return 'high';
+            
+            // Простые операции = низкий приоритет
+            if (operationType === 'Р' || operationType === 'Г') return 'low';
+            
+            return 'medium';
+        }
+
+        // Расчет прогресса по участку
+        function calculateProgressBySection(section) {
+            const progressMap = {
+                cutting: 17,      // 1/6 * 100
+                cleaning: 33,     // 2/6 * 100
+                welding: 50,      // 3/6 * 100
+                painting: 67,     // 4/6 * 100
+                warehouse: 85,    // 5/6 * 100
+                shipped: 100      // 6/6 * 100
+            };
+            return progressMap[section] || 0;
         }
 
         function viewOrders() {
