@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка отчетов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-line;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Проверка работы отчетов</h1>
+    
+    <div class="info">
+        <p>Эта страница поможет диагностировать проблемы с вкладкой "Проблемы" в отчетах.</p>
+    </div>
+
+    <button class="btn" onclick="runFullTest()">🧪 Запустить полный тест</button>
+    <button class="btn" onclick="createTestData()">📝 Создать тестовые данные</button>
+    <button class="btn" onclick="checkLocalStorage()">💾 Проверить localStorage</button>
+    <button class="btn" onclick="openReports()">📊 Открыть отчеты</button>
+
+    <div id="result"></div>
+    <div id="log"></div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function createTestData() {
+            log('Создание тестовых данных...');
+            
+            const testOrders = [
+                {
+                    id: "test-order-1",
+                    number: "TEST-001",
+                    client: "Тестовый клиент 1",
+                    manager: "Тестовый клиент 1", 
+                    product: "Металлоконструкция",
+                    operationType: "Металлоконструкция",
+                    date: "2025-01-10",
+                    currentSection: "cutting",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-10T10:00:00.000Z"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-1",
+                            description: "Тестовая проблема 1: Некачественный материал",
+                            user: "Тестовый пользователь",
+                            timestamp: "2025-01-10T14:30:00.000Z",
+                            resolved: false
+                        },
+                        {
+                            id: "issue-2",
+                            description: "Тестовая проблема 2: Задержка поставки (решено)",
+                            user: "Менеджер",
+                            timestamp: "2025-01-11T09:15:00.000Z",
+                            resolved: true
+                        }
+                    ]
+                },
+                {
+                    id: "test-order-2", 
+                    number: "TEST-002",
+                    client: "Тестовый клиент 2",
+                    manager: "Тестовый клиент 2",
+                    product: "Сварочные работы",
+                    operationType: "Сварочные работы", 
+                    date: "2025-01-12",
+                    currentSection: "welding",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-12T10:00:00.000Z"
+                        },
+                        {
+                            section: "welding", 
+                            timestamp: "2025-01-13T08:00:00.000Z"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-3",
+                            description: "Тестовая проблема 3: Проблема с качеством сварки",
+                            user: "Сварщик Иванов",
+                            timestamp: "2025-01-13T16:20:00.000Z",
+                            resolved: false
+                        }
+                    ]
+                }
+            ];
+
+            localStorage.setItem('ordersData', JSON.stringify(testOrders));
+            
+            if (!localStorage.getItem('userProfile')) {
+                const testProfile = {
+                    name: "Тестовый пользователь",
+                    role: "Администратор", 
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('userProfile', JSON.stringify(testProfile));
+                log('Создан профиль пользователя');
+            }
+
+            log(`Создано ${testOrders.length} тестовых заказов с проблемами`);
+            
+            const totalIssues = testOrders.reduce((total, order) => 
+                total + (order.issues ? order.issues.length : 0), 0);
+            log(`Всего проблем: ${totalIssues}`);
+            
+            document.getElementById('result').innerHTML = `
+                <div class="info success">
+                    <h3>✅ Тестовые данные созданы!</h3>
+                    <p>Создано ${testOrders.length} заказов с ${totalIssues} проблемами</p>
+                </div>
+            `;
+        }
+
+        function checkLocalStorage() {
+            log('Проверка данных в localStorage...');
+            
+            const ordersData = localStorage.getItem('ordersData');
+            const userProfile = localStorage.getItem('userProfile');
+            
+            let resultHTML = '<div class="info"><h3>📊 Состояние localStorage:</h3>';
+            
+            if (ordersData) {
+                const orders = JSON.parse(ordersData);
+                const totalIssues = orders.reduce((total, order) => {
+                    const issuesCount = order.issues ? order.issues.length : 0;
+                    log(`Заказ ${order.number}: ${issuesCount} проблем`);
+                    return total + issuesCount;
+                }, 0);
+                
+                const activeIssues = orders.reduce((total, order) => {
+                    if (!order.issues) return total;
+                    return total + order.issues.filter(issue => !issue.resolved).length;
+                }, 0);
+                
+                resultHTML += `
+                    <p>✅ <strong>Заказы:</strong> ${orders.length}</p>
+                    <p>✅ <strong>Всего проблем:</strong> ${totalIssues}</p>
+                    <p>✅ <strong>Активных проблем:</strong> ${activeIssues}</p>
+                `;
+                log(`Найдено ${orders.length} заказов с ${totalIssues} проблемами (${activeIssues} активных)`);
+            } else {
+                resultHTML += '<p>❌ <strong>Нет данных о заказах</strong></p>';
+                log('ОШИБКА: Нет данных о заказах в localStorage');
+            }
+            
+            if (userProfile) {
+                const profile = JSON.parse(userProfile);
+                resultHTML += `<p>✅ <strong>Пользователь:</strong> ${profile.name}</p>`;
+                log(`Найден пользователь: ${profile.name}`);
+            } else {
+                resultHTML += '<p>❌ <strong>Нет профиля пользователя</strong></p>';
+                log('ОШИБКА: Нет профиля пользователя');
+            }
+            
+            resultHTML += '</div>';
+            document.getElementById('result').innerHTML = resultHTML;
+        }
+
+        function openReports() {
+            log('Открытие страницы отчетов...');
+            const newWindow = window.open('reports.html', '_blank');
+            
+            // Проверяем через несколько секунд, открылась ли страница
+            setTimeout(() => {
+                if (newWindow && !newWindow.closed) {
+                    log('✅ Страница отчетов открыта');
+                    document.getElementById('result').innerHTML = `
+                        <div class="info success">
+                            <h3>📊 Страница отчетов открыта</h3>
+                            <p>Проверьте вкладку "⚠️ Проблемы" в новом окне</p>
+                            <p>Откройте консоль разработчика (F12) для просмотра отладочной информации</p>
+                        </div>
+                    `;
+                } else {
+                    log('❌ Не удалось открыть страницу отчетов');
+                    document.getElementById('result').innerHTML = `
+                        <div class="info error">
+                            <h3>❌ Ошибка открытия отчетов</h3>
+                            <p>Попробуйте открыть <a href="reports.html" target="_blank">reports.html</a> вручную</p>
+                        </div>
+                    `;
+                }
+            }, 1000);
+        }
+
+        async function runFullTest() {
+            log('=== ЗАПУСК ПОЛНОГО ТЕСТА ===');
+            document.getElementById('result').innerHTML = `
+                <div class="info warning">
+                    <h3>🧪 Выполняется полный тест...</h3>
+                    <p>Проверяем вкладку "Проблемы" в отчетах</p>
+                </div>
+            `;
+            
+            // Шаг 1: Создаем тестовые данные
+            log('Шаг 1: Создание тестовых данных');
+            createTestData();
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Шаг 2: Проверяем localStorage
+            log('Шаг 2: Проверка localStorage');
+            checkLocalStorage();
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Шаг 3: Открываем отчеты
+            log('Шаг 3: Открытие отчетов');
+            openReports();
+            
+            log('=== ТЕСТ ЗАВЕРШЕН ===');
+            log('Инструкции:');
+            log('1. В новом окне откройте отчеты');
+            log('2. Нажмите на вкладку "⚠️ Проблемы"');
+            log('3. Должны отобразиться тестовые проблемы');
+            log('4. Откройте консоль (F12) для отладочной информации');
+        }
+
+        // Инициализация
+        document.getElementById('log').innerHTML = '';
+        log('Страница проверки отчетов загружена');
+        checkLocalStorage();
+    </script>
+</body>
+</html>

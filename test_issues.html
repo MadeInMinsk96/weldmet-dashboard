@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест проблем</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест вкладки "Проблемы"</h1>
+    
+    <div class="info">
+        <p>Эта страница создаст тестовые данные с проблемами в localStorage для тестирования вкладки "Проблемы" в отчетах.</p>
+    </div>
+
+    <button class="btn" onclick="createTestData()">Создать тестовые данные с проблемами</button>
+    <button class="btn" onclick="clearTestData()">Очистить данные</button>
+    <button class="btn" onclick="showCurrentData()">Показать текущие данные</button>
+    <button class="btn" onclick="goToReports()">Перейти к отчетам</button>
+
+    <div id="result"></div>
+
+    <script>
+        function createTestData() {
+            // Создаем тестовые заказы с проблемами
+            const testOrders = [
+                {
+                    id: "test-order-1",
+                    number: "TEST-001",
+                    client: "Тестовый клиент 1",
+                    manager: "Тестовый клиент 1",
+                    product: "Металлоконструкция",
+                    operationType: "Металлоконструкция",
+                    date: "2025-01-10",
+                    currentSection: "cutting",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-10T10:00:00.000Z"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-1",
+                            description: "Некачественный материал, требуется замена",
+                            user: "Тестовый пользователь",
+                            timestamp: "2025-01-10T14:30:00.000Z",
+                            resolved: false
+                        },
+                        {
+                            id: "issue-2", 
+                            description: "Задержка поставки металла на 2 дня",
+                            user: "Менеджер",
+                            timestamp: "2025-01-11T09:15:00.000Z",
+                            resolved: true
+                        }
+                    ]
+                },
+                {
+                    id: "test-order-2",
+                    number: "TEST-002",
+                    client: "Тестовый клиент 2",
+                    manager: "Тестовый клиент 2",
+                    product: "Сварочные работы",
+                    operationType: "Сварочные работы",
+                    date: "2025-01-12",
+                    currentSection: "welding",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-12T10:00:00.000Z"
+                        },
+                        {
+                            section: "welding",
+                            timestamp: "2025-01-13T08:00:00.000Z"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-3",
+                            description: "Проблема с качеством сварного шва, требует переделки",
+                            user: "Сварщик Иванов",
+                            timestamp: "2025-01-13T16:20:00.000Z",
+                            resolved: false
+                        }
+                    ]
+                },
+                {
+                    id: "test-order-3",
+                    number: "TEST-003",
+                    client: "Тестовый клиент 3",
+                    manager: "Тестовый клиент 3",
+                    product: "Покраска изделий",
+                    operationType: "Покраска изделий",
+                    date: "2025-01-08",
+                    currentSection: "painting",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-08T10:00:00.000Z"
+                        },
+                        {
+                            section: "welding",
+                            timestamp: "2025-01-09T08:00:00.000Z"
+                        },
+                        {
+                            section: "painting",
+                            timestamp: "2025-01-10T12:00:00.000Z"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-4",
+                            description: "Неправильный цвет краски, заказчик не доволен",
+                            user: "Маляр Петров",
+                            timestamp: "2025-01-10T15:45:00.000Z",
+                            resolved: false
+                        },
+                        {
+                            id: "issue-5",
+                            description: "Дефект поверхности после покраски",
+                            user: "Контролер качества",
+                            timestamp: "2025-01-11T11:30:00.000Z",
+                            resolved: true
+                        }
+                    ]
+                }
+            ];
+
+            // Сохраняем в localStorage
+            localStorage.setItem('ordersData', JSON.stringify(testOrders));
+            
+            // Создаем профиль пользователя если его нет
+            if (!localStorage.getItem('userProfile')) {
+                const testProfile = {
+                    name: "Тестовый пользователь",
+                    role: "Администратор",
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('userProfile', JSON.stringify(testProfile));
+            }
+
+            document.getElementById('result').innerHTML = `
+                <div class="info success">
+                    <h3>✅ Тестовые данные созданы!</h3>
+                    <p>Создано ${testOrders.length} заказов с проблемами:</p>
+                    <ul>
+                        <li><strong>TEST-001</strong>: 2 проблемы (1 активная, 1 решенная)</li>
+                        <li><strong>TEST-002</strong>: 1 активная проблема</li>
+                        <li><strong>TEST-003</strong>: 2 проблемы (1 активная, 1 решенная)</li>
+                    </ul>
+                    <p><strong>Всего проблем:</strong> 5 (3 активных, 2 решенных)</p>
+                </div>
+            `;
+        }
+
+        function clearTestData() {
+            localStorage.removeItem('ordersData');
+            localStorage.removeItem('userProfile');
+            document.getElementById('result').innerHTML = `
+                <div class="info">
+                    <h3>🗑️ Данные очищены</h3>
+                    <p>Все тестовые данные удалены из localStorage</p>
+                </div>
+            `;
+        }
+
+        function showCurrentData() {
+            const ordersData = localStorage.getItem('ordersData');
+            const userProfile = localStorage.getItem('userProfile');
+            
+            let result = '<div class="info"><h3>📊 Текущие данные в localStorage:</h3>';
+            
+            if (ordersData) {
+                const orders = JSON.parse(ordersData);
+                const totalIssues = orders.reduce((total, order) => 
+                    total + (order.issues ? order.issues.length : 0), 0);
+                
+                result += `
+                    <p><strong>Заказы:</strong> ${orders.length}</p>
+                    <p><strong>Всего проблем:</strong> ${totalIssues}</p>
+                `;
+            } else {
+                result += '<p>❌ Нет данных о заказах</p>';
+            }
+            
+            if (userProfile) {
+                const profile = JSON.parse(userProfile);
+                result += `<p><strong>Пользователь:</strong> ${profile.name}</p>`;
+            } else {
+                result += '<p>❌ Нет профиля пользователя</p>';
+            }
+            
+            result += '</div>';
+            document.getElementById('result').innerHTML = result;
+        }
+
+        function goToReports() {
+            window.location.href = 'reports.html';
+        }
+
+        // Показываем текущие данные при загрузке
+        showCurrentData();
+    </script>
+</body>
+</html>

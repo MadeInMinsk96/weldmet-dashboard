@@ -647,6 +647,8 @@
         
         // Переключение вкладок
         function showReportTab(tabName) {
+            console.log('Переключение на вкладку:', tabName);
+            
             // Убираем активный класс с табов
             document.querySelectorAll('.report-tab').forEach(tab => {
                 tab.classList.remove('active');
@@ -658,8 +660,14 @@
             });
             
             // Показываем выбранную вкладку
-            document.querySelector(`[onclick="showReportTab('${tabName}')"]`).classList.add('active');
-            document.getElementById(tabName + 'Section').style.display = 'block';
+            const targetTab = document.querySelector(`[onclick="showReportTab('${tabName}')"]`);
+            const targetSection = document.getElementById(tabName + 'Section');
+            
+            console.log('Найдена вкладка:', targetTab);
+            console.log('Найдена секция:', targetSection);
+            
+            if (targetTab) targetTab.classList.add('active');
+            if (targetSection) targetSection.style.display = 'block';
             
             currentTab = tabName;
             showCurrentTab();
@@ -823,9 +831,12 @@
         
         // Показ отчетов по проблемам
         function showIssuesReports(orders) {
+            console.log('Показ проблем. Всего заказов:', orders.length);
+            
             // Собираем все проблемы
             const allIssues = [];
             orders.forEach(order => {
+                console.log('Проверяем заказ:', order.number, 'Проблемы:', order.issues);
                 if (order.issues && order.issues.length > 0) {
                     order.issues.forEach(issue => {
                         allIssues.push({
@@ -837,6 +848,8 @@
                     });
                 }
             });
+            
+            console.log('Найдено проблем:', allIssues.length);
             
             // Показываем статистику проблем
             showIssuesStatistics(allIssues);

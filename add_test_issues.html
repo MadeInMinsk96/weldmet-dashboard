@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить тестовые проблемы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .success {
+            background: #28a745;
+        }
+        .success:hover {
+            background: #1e7e34;
+        }
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .result {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Добавить тестовые проблемы</h1>
+    
+    <div class="info">
+        <p><strong>Эта страница добавит тестовые данные с проблемами для проверки вкладки "Проблемы" в отчетах.</strong></p>
+        <p>После добавления данных перейдите в дашборд → Отчеты → вкладка "⚠️ Проблемы"</p>
+    </div>
+
+    <button class="btn success" onclick="addTestIssues()">✅ Добавить тестовые данные с проблемами</button>
+    <button class="btn" onclick="openDashboard()">📊 Открыть дашборд</button>
+
+    <div id="result"></div>
+
+    <script>
+        function addTestIssues() {
+            // Создаем тестовые заказы с проблемами
+            const testOrders = [
+                {
+                    id: "test-001",
+                    number: "TEST-001",
+                    client: "ООО Тест-Клиент 1",
+                    manager: "ООО Тест-Клиент 1",
+                    product: "Металлическая конструкция",
+                    operationType: "Металлическая конструкция",
+                    date: "2025-01-10",
+                    currentSection: "cutting",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-10T10:00:00.000Z",
+                            user: "Система"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-1",
+                            description: "Обнаружен брак в металле - трещины на поверхности. Требуется замена материала.",
+                            user: "Контролер качества Иванов",
+                            timestamp: "2025-01-10T14:30:00.000Z",
+                            resolved: false
+                        },
+                        {
+                            id: "issue-2",
+                            description: "Задержка поставки нового металла на 2 дня из-за проблем у поставщика.",
+                            user: "Менеджер закупок",
+                            timestamp: "2025-01-11T09:15:00.000Z",
+                            resolved: true
+                        }
+                    ]
+                },
+                {
+                    id: "test-002",
+                    number: "TEST-002",
+                    client: "ИП Тестовый 2",
+                    manager: "ИП Тестовый 2",
+                    product: "Сварные конструкции",
+                    operationType: "Сварные конструкции",
+                    date: "2025-01-12",
+                    currentSection: "welding",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-12T10:00:00.000Z",
+                            user: "Система"
+                        },
+                        {
+                            section: "welding",
+                            timestamp: "2025-01-13T08:00:00.000Z",
+                            user: "Система"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-3",
+                            description: "Некачественный сварной шов в соединении №5. Требуется переварка согласно ГОСТ.",
+                            user: "Сварщик Петров А.И.",
+                            timestamp: "2025-01-13T16:20:00.000Z",
+                            resolved: false
+                        }
+                    ]
+                },
+                {
+                    id: "test-003",
+                    number: "TEST-003",
+                    client: "Завод Тестовый",
+                    manager: "Завод Тестовый",
+                    product: "Покрасочные работы",
+                    operationType: "Покрасочные работы",
+                    date: "2025-01-08",
+                    currentSection: "painting",
+                    history: [
+                        {
+                            section: "cutting",
+                            timestamp: "2025-01-08T10:00:00.000Z",
+                            user: "Система"
+                        },
+                        {
+                            section: "welding",
+                            timestamp: "2025-01-09T08:00:00.000Z",
+                            user: "Система"
+                        },
+                        {
+                            section: "painting",
+                            timestamp: "2025-01-10T12:00:00.000Z",
+                            user: "Система"
+                        }
+                    ],
+                    issues: [
+                        {
+                            id: "issue-4",
+                            description: "Неправильный цвет краски - заказчик просит RAL 5015, а использован RAL 5005.",
+                            user: "Маляр Сидоров",
+                            timestamp: "2025-01-10T15:45:00.000Z",
+                            resolved: false
+                        },
+                        {
+                            id: "issue-5",
+                            description: "Обнаружены подтеки краски на нижней части изделия после покраски.",
+                            user: "Контролер ОТК",
+                            timestamp: "2025-01-11T11:30:00.000Z",
+                            resolved: true
+                        }
+                    ]
+                }
+            ];
+
+            // Сохраняем данные в localStorage
+            localStorage.setItem('ordersData', JSON.stringify(testOrders));
+            
+            // Создаем профиль пользователя если его нет
+            if (!localStorage.getItem('userProfile')) {
+                const testProfile = {
+                    name: "Тестовый пользователь",
+                    role: "Администратор",
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('userProfile', JSON.stringify(testProfile));
+            }
+
+            // Подсчитываем статистику
+            const totalIssues = testOrders.reduce((total, order) => 
+                total + (order.issues ? order.issues.length : 0), 0);
+            
+            const activeIssues = testOrders.reduce((total, order) => {
+                if (!order.issues) return total;
+                return total + order.issues.filter(issue => !issue.resolved).length;
+            }, 0);
+
+            // Показываем результат
+            document.getElementById('result').innerHTML = `
+                <div class="result">
+                    <h3>✅ Тестовые данные успешно добавлены!</h3>
+                    <p><strong>Создано:</strong></p>
+                    <ul>
+                        <li>🛠️ <strong>${testOrders.length}</strong> тестовых заказов</li>
+                        <li>⚠️ <strong>${totalIssues}</strong> проблем (${activeIssues} активных, ${totalIssues - activeIssues} решенных)</li>
+                    </ul>
+                    <p><strong>Детали проблем:</strong></p>
+                    <ul>
+                        <li><strong>TEST-001:</strong> 2 проблемы (брак металла, задержка поставки)</li>
+                        <li><strong>TEST-002:</strong> 1 активная проблема (некачественный сварной шов)</li>
+                        <li><strong>TEST-003:</strong> 2 проблемы (неправильный цвет краски, подтеки)</li>
+                    </ul>
+                    <p><strong>Теперь перейдите в дашборд и проверьте вкладку "⚠️ Проблемы" в разделе "📋 Отчеты"</strong></p>
+                </div>
+            `;
+        }
+
+        function openDashboard() {
+            window.open('mobile_order_dashboard.html', '_blank');
+        }
+    </script>
+</body>
+</html>
