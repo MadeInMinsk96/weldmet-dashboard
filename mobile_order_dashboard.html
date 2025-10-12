@@ -1964,28 +1964,55 @@
 
         // Полная очистка кэша для подготовки к новому циклу работы
         function clearAllCache() {
-            if (confirm('⚠️ ВНИМАНИЕ!\n\nЭта операция полностью очистит все данные приложения:\n• Все заказы и их состояния\n• Все отчеты и аналитику\n• Все проблемы и история\n\nПродолжить?')) {
+            if (confirm('⚠️ ВНИМАНИЕ!\n\nЭта операция полностью очистит все данные приложения:\n• Все заказы и их состояния\n• Все отчеты и аналитику\n• Все проблемы и история\n• Все кэшированные данные\n\nПродолжить?')) {
                 try {
-                    // Очищаем все данные localStorage
-                    localStorage.removeItem('ordersData');
-                    localStorage.removeItem('userProfile');
-                    localStorage.removeItem('reportsData');
-                    localStorage.removeItem('issuesData');
-                    localStorage.removeItem('analyticsData');
+                    // Очищаем все глобальные переменные состояния
+                    currentUser = null;
+                    selectedOrderId = null;
+                    selectedSection = null;
+                    searchFilter = '';
+                    reportSearchFilter = '';
+                    currentReportTab = 'orders';
                     
-                    // Очищаем весь localStorage (на всякий случай)
+                    // Останавливаем автообновление
+                    if (autoUpdateInterval) {
+                        clearInterval(autoUpdateInterval);
+                        autoUpdateInterval = null;
+                    }
+                    
+                    // Очищаем все данные localStorage - каждый ключ отдельно
+                    const allKeys = Object.keys(localStorage);
+                    allKeys.forEach(key => {
+                        localStorage.removeItem(key);
+                    });
+                    
+                    // Полная очистка localStorage
                     localStorage.clear();
                     
                     // Очищаем sessionStorage
                     sessionStorage.clear();
                     
-                    alert('✅ Кэш полностью очищен!\n\nПриложение готово к новому циклу работы.\nСтраница будет перезагружена.');
+                    // Очищаем IndexedDB если используется
+                    if (window.indexedDB) {
+                        window.indexedDB.databases().then(dbs => {
+                            dbs.forEach(db => {
+                                window.indexedDB.deleteDatabase(db.name);
+                            });
+                        }).catch(() => {}); // Игнорируем ошибки IndexedDB
+                    }
                     
-                    // Перезагружаем страницу для полного обновления
-                    window.location.reload();
+                    // Очищаем все cookies
+                    document.cookie.split(";").forEach(function(c) { 
+                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                    });
+                    
+                    alert('✅ Кэш полностью очищен!\n\nВсе данные приложения удалены.\nСтраница будет перезагружена для чистого старта.');
+                    
+                    // Принудительная перезагрузка без кэша
+                    window.location.reload(true);
                 } catch (error) {
                     console.error('Ошибка при очистке кэша:', error);
-                    alert('❌ Ошибка при очистке кэша. Попробуйте еще раз.');
+                    alert('❌ Ошибка при очистке кэша. Попробуйте еще раз или перезагрузите страницу вручную.');
                 }
             }
         }
@@ -2591,7 +2618,9 @@
                     subtitle = 'Готово';
                 } else if (stageData.estimatedTime && stageData.estimatedTime !== '0') {
                     status = 'pending';
-                    subtitle = `Время: ${stageData.estimatedTime}`;
+                    // Резка указана в минутах, остальные участки в часах
+                    const timeUnit = stage.key === 'cutting' ? 'мин' : 'ч';
+                    subtitle = `Время: ${stageData.estimatedTime} ${timeUnit}`;
                 }
                 
                 const timelineItem = document.createElement('div');
