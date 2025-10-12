@@ -243,6 +243,173 @@
             opacity: 0.7;
         }
 
+        /* Поиск в отчетах */
+        .search-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-input-container {
+            position: relative;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 18px;
+            pointer-events: none;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Вкладки отчетов */
+        .report-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .report-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+        
+        .report-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Раздел проблем */
+        .issues-section {
+            margin-bottom: 30px;
+        }
+        
+        .issue-item {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #e53e3e;
+        }
+        
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .issue-order {
+            font-weight: 600;
+            color: #e53e3e;
+            font-size: 16px;
+        }
+        
+        .issue-date {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        
+        .issue-description {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #fed7d7;
+        }
+        
+        .issue-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        /* Счетчики проблем */
+        .issues-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .issue-stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .issue-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+        
+        .issue-stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
         .stats-overview {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -320,11 +487,40 @@
             <p>Детальная информация о движении заказов по производственным участкам</p>
         </div>
 
+        <!-- Поиск по отчетам -->
+        <div class="search-container">
+            <div class="search-input-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск в отчетах по номеру заказа, клиенту или проблеме...">
+                <button class="clear-search" id="clearSearch" onclick="clearSearch()">×</button>
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <!-- Вкладки отчетов -->
+        <div class="report-tabs">
+            <button class="report-tab active" onclick="showReportTab('orders')">📊 Все заказы</button>
+            <button class="report-tab" onclick="showReportTab('issues')">⚠️ Проблемы</button>
+            <button class="report-tab" onclick="showReportTab('analytics')">📈 Аналитика</button>
+        </div>
+
         <!-- Общая статистика -->
         <div class="stats-overview" id="statsOverview"></div>
 
-        <!-- Отчеты по заказам -->
-        <div class="reports-grid" id="reportsContainer"></div>
+        <!-- Раздел заказов -->
+        <div id="ordersSection" class="report-section">
+            <div class="reports-grid" id="reportsContainer"></div>
+        </div>
+
+        <!-- Раздел проблем -->
+        <div id="issuesSection" class="report-section" style="display: none;">
+            <div class="issues-stats" id="issuesStats"></div>
+            <div class="issues-section" id="issuesContainer"></div>
+        </div>
+
+        <!-- Раздел аналитики -->
+        <div id="analyticsSection" class="report-section" style="display: none;">
+            <div id="analyticsContainer"></div>
+        </div>
     </div>
 
     <script>
@@ -337,6 +533,11 @@
             warehouse: { name: 'Склад', icon: '📦', order: 5 },
             shipped: { name: 'Отгружено', icon: '🚛', order: 6 }
         };
+
+        // Глобальные переменные
+        let searchFilter = '';
+        let currentTab = 'orders';
+        let allOrders = [];
 
         // Получение заказов из localStorage
         function getOrdersFromStorage() {
@@ -370,6 +571,7 @@
             return date.toLocaleDateString('ru-RU', {
                 day: '2-digit',
                 month: '2-digit',
+                year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -377,13 +579,113 @@
 
         // Загрузка отчетов
         function loadReports() {
-            const orders = getOrdersFromStorage();
+            allOrders = getOrdersFromStorage();
+            
+            // Инициализируем поиск
+            initializeSearch();
             
             // Показываем статистику
-            showStatistics(orders);
+            showStatistics(allOrders);
             
-            // Показываем отчеты по заказам
-            showOrderReports(orders);
+            // Показываем текущую вкладку
+            showCurrentTab();
+        }
+
+        // === СИСТЕМА ПОИСКА ===
+        
+        // Инициализация поиска
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            
+            searchInput.addEventListener('input', function(e) {
+                searchFilter = e.target.value.toLowerCase().trim();
+                
+                // Показываем/скрываем кнопку очистки
+                if (searchFilter) {
+                    clearBtn.style.display = 'flex';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+                
+                // Обновляем текущую вкладку с фильтром
+                showCurrentTab();
+            });
+        }
+        
+        // Очистка поиска
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            
+            searchInput.value = '';
+            searchFilter = '';
+            clearBtn.style.display = 'none';
+            
+            // Обновляем текущую вкладку
+            showCurrentTab();
+        }
+        
+        // === УПРАВЛЕНИЕ ВКЛАДКАМИ ===
+        
+        // Переключение вкладок
+        function showReportTab(tabName) {
+            // Убираем активный класс с табов
+            document.querySelectorAll('.report-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Скрываем все секции
+            document.querySelectorAll('.report-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Показываем выбранную вкладку
+            document.querySelector(`[onclick="showReportTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName + 'Section').style.display = 'block';
+            
+            currentTab = tabName;
+            showCurrentTab();
+        }
+        
+        // Показ текущей вкладки
+        function showCurrentTab() {
+            const filteredOrders = filterOrders(allOrders);
+            
+            switch (currentTab) {
+                case 'orders':
+                    showOrderReports(filteredOrders);
+                    break;
+                case 'issues':
+                    showIssuesReports(filteredOrders);
+                    break;
+                case 'analytics':
+                    showAnalytics(filteredOrders);
+                    break;
+            }
+        }
+        
+        // Фильтрация заказов
+        function filterOrders(orders) {
+            if (!searchFilter) {
+                return orders;
+            }
+            
+            return orders.filter(order => {
+                // Поиск по основным полям заказа
+                const orderFields = [
+                    order.number,
+                    order.client || order.manager,
+                    order.product || order.operationType,
+                    SECTIONS[order.currentSection]?.name || 'Новый заказ'
+                ].join(' ').toLowerCase();
+                
+                // Поиск по проблемам
+                const issueFields = order.issues ? 
+                    order.issues.map(issue => issue.description).join(' ').toLowerCase() : '';
+                
+                return orderFields.includes(searchFilter) || issueFields.includes(searchFilter);
+            });
         }
 
         // Показ общей статистики
@@ -426,11 +728,18 @@
             const reportsContainer = document.getElementById('reportsContainer');
             
             if (orders.length === 0) {
+                const emptyText = searchFilter ? 
+                    'По вашему запросу заказы не найдены' : 
+                    'Нет заказов для отчета';
+                const emptySubtext = searchFilter ? 
+                    'Попробуйте изменить поисковый запрос' : 
+                    'Создайте первый заказ в дашборде';
+                    
                 reportsContainer.innerHTML = `
                     <div class="empty-reports">
                         <div class="icon">📋</div>
-                        <div class="text">Нет заказов для отчета</div>
-                        <div class="subtext">Создайте первый заказ в дашборде</div>
+                        <div class="text">${emptyText}</div>
+                        <div class="subtext">${emptySubtext}</div>
                     </div>
                 `;
                 return;
@@ -441,12 +750,14 @@
             orders.forEach(order => {
                 const progress = calculateOrderProgress(order);
                 const currentSectionName = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
+                const issuesCount = order.issues ? order.issues.length : 0;
+                const issuesBadge = issuesCount > 0 ? `<span style="color: #e74c3c; font-weight: bold; margin-left: 10px;">⚠️ ${issuesCount} проблем(ы)</span>` : '';
                 
                 reportsHTML += `
                     <div class="report-card">
                         <div class="report-header">
                             <div class="order-title">
-                                📦 ${order.number} - ${order.product}
+                                📦 ${order.number} - ${order.product || order.operationType}${issuesBadge}
                             </div>
                             <div class="order-date">${formatDate(order.date)}</div>
                         </div>
@@ -454,11 +765,11 @@
                         <div class="order-info">
                             <div class="info-row">
                                 <span class="info-label">Клиент:</span>
-                                <span class="info-value">${order.client}</span>
+                                <span class="info-value">${order.client || order.manager}</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Товар:</span>
-                                <span class="info-value">${order.product}</span>
+                                <span class="info-value">${order.product || order.operationType}</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Дата заказа:</span>
@@ -482,11 +793,240 @@
                             </div>
                             ${generateLogisticsChain(order)}
                         </div>
+                        
+                        ${issuesCount > 0 ? generateIssuesPreview(order.issues) : ''}
                     </div>
                 `;
             });
             
             reportsContainer.innerHTML = reportsHTML;
+        }
+        
+        // === ОТЧЕТЫ ПО ПРОБЛЕМАМ ===
+        
+        // Показ отчетов по проблемам
+        function showIssuesReports(orders) {
+            // Собираем все проблемы
+            const allIssues = [];
+            orders.forEach(order => {
+                if (order.issues && order.issues.length > 0) {
+                    order.issues.forEach(issue => {
+                        allIssues.push({
+                            ...issue,
+                            orderNumber: order.number,
+                            orderProduct: order.product || order.operationType,
+                            orderClient: order.client || order.manager
+                        });
+                    });
+                }
+            });
+            
+            // Показываем статистику проблем
+            showIssuesStatistics(allIssues);
+            
+            // Показываем список проблем
+            const issuesContainer = document.getElementById('issuesContainer');
+            
+            if (allIssues.length === 0) {
+                const emptyText = searchFilter ? 
+                    'По вашему запросу проблемы не найдены' : 
+                    'Проблем не найдено';
+                const emptySubtext = searchFilter ? 
+                    'Попробуйте изменить поисковый запрос' : 
+                    'Все заказы выполняются без проблем';
+                    
+                issuesContainer.innerHTML = `
+                    <div class="empty-reports">
+                        <div class="icon">✅</div>
+                        <div class="text">${emptyText}</div>
+                        <div class="subtext">${emptySubtext}</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Сортируем проблемы по дате (новые сверху)
+            allIssues.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let issuesHTML = '';
+            allIssues.forEach(issue => {
+                issuesHTML += `
+                    <div class="issue-item">
+                        <div class="issue-header">
+                            <div class="issue-order">⚠️ Заказ ${issue.orderNumber}</div>
+                            <div class="issue-date">${formatDateTime(issue.timestamp)}</div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px; color: #7f8c8d; font-size: 14px;">
+                            <strong>Клиент:</strong> ${issue.orderClient} | <strong>Товар:</strong> ${issue.orderProduct}
+                        </div>
+                        
+                        <div class="issue-description">
+                            ${issue.description}
+                        </div>
+                        
+                        <div class="issue-meta">
+                            <span>Автор: ${issue.user}</span>
+                            <span>${issue.resolved ? '✅ Решено' : '🔄 В работе'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            issuesContainer.innerHTML = issuesHTML;
+        }
+        
+        // Показ статистики проблем
+        function showIssuesStatistics(issues) {
+            const activeIssues = issues.filter(issue => !issue.resolved);
+            const resolvedIssues = issues.filter(issue => issue.resolved);
+            
+            const statsHTML = `
+                <div class="issue-stat-card">
+                    <div class="issue-stat-number">${issues.length}</div>
+                    <div class="issue-stat-label">Всего проблем</div>
+                </div>
+                <div class="issue-stat-card">
+                    <div class="issue-stat-number">${activeIssues.length}</div>
+                    <div class="issue-stat-label">Активных</div>
+                </div>
+                <div class="issue-stat-card">
+                    <div class="issue-stat-number">${resolvedIssues.length}</div>
+                    <div class="issue-stat-label">Решенных</div>
+                </div>
+            `;
+            
+            document.getElementById('issuesStats').innerHTML = statsHTML;
+        }
+        
+        // Генерация превью проблем для карточки заказа
+        function generateIssuesPreview(issues) {
+            if (!issues || issues.length === 0) return '';
+            
+            const activeIssues = issues.filter(issue => !issue.resolved);
+            const recentIssue = issues[issues.length - 1];
+            
+            return `
+                <div style="margin-top: 20px; padding: 15px; background: #fff5f5; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                    <div style="font-weight: 600; color: #e74c3c; margin-bottom: 8px;">
+                        ⚠️ Последняя проблема (${formatDateTime(recentIssue.timestamp)})
+                    </div>
+                    <div style="font-size: 14px; color: #2c3e50;">
+                        ${recentIssue.description.substring(0, 100)}${recentIssue.description.length > 100 ? '...' : ''}
+                    </div>
+                    ${activeIssues.length > 0 ? `<div style="font-size: 12px; color: #e74c3c; margin-top: 5px;">🔄 ${activeIssues.length} активных проблем</div>` : ''}
+                </div>
+            `;
+        }
+        
+        // === АНАЛИТИКА ===
+        
+        // Показ аналитики
+        function showAnalytics(orders) {
+            const analyticsContainer = document.getElementById('analyticsContainer');
+            
+            // Подсчет статистики
+            const stats = {
+                total: orders.length,
+                inProgress: orders.filter(o => o.currentSection && o.currentSection !== 'shipped').length,
+                completed: orders.filter(o => o.currentSection === 'shipped').length,
+                new: orders.filter(o => !o.currentSection).length,
+                withIssues: orders.filter(o => o.issues && o.issues.length > 0).length
+            };
+            
+            // Статистика по участкам
+            const sectionStats = {};
+            Object.keys(SECTIONS).forEach(section => {
+                sectionStats[section] = orders.filter(o => o.currentSection === section).length;
+            });
+            
+            let analyticsHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-number">${stats.total}</div>
+                        <div class="stat-label">Всего заказов</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">⚙️</div>
+                        <div class="stat-number">${stats.inProgress}</div>
+                        <div class="stat-label">В производстве</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-number">${stats.completed}</div>
+                        <div class="stat-label">Отгружено</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-number">${stats.withIssues}</div>
+                        <div class="stat-label">С проблемами</div>
+                    </div>
+                </div>
+                
+                <div class="report-card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">Заказы по участкам</h3>
+            `;
+            
+            Object.keys(SECTIONS).forEach(sectionKey => {
+                const section = SECTIONS[sectionKey];
+                const count = sectionStats[sectionKey];
+                const percentage = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
+                
+                analyticsHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span>${section.icon} ${section.name}</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 100px; height: 8px; background: #ecf0f1; border-radius: 4px;">
+                                <div style="width: ${percentage}%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px;"></div>
+                            </div>
+                            <span style="font-weight: bold; min-width: 30px;">${count}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            analyticsHTML += '</div>';
+            
+            // Добавляем тренды если есть данные
+            if (orders.length > 0) {
+                analyticsHTML += generateTrendsAnalysis(orders);
+            }
+            
+            analyticsContainer.innerHTML = analyticsHTML;
+        }
+        
+        // Генерация анализа трендов
+        function generateTrendsAnalysis(orders) {
+            const issuesCount = orders.reduce((total, order) => 
+                total + (order.issues ? order.issues.length : 0), 0);
+            
+            const avgProgress = orders.length > 0 ? 
+                Math.round(orders.reduce((total, order) => 
+                    total + calculateOrderProgress(order), 0) / orders.length) : 0;
+            
+            return `
+                <div class="report-card" style="margin-top: 20px;">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 Ключевые показатели</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📊</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #2c3e50;">${avgProgress}%</div>
+                            <div style="color: #7f8c8d;">Средний прогресс</div>
+                        </div>
+                        
+                        <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">${issuesCount}</div>
+                            <div style="color: #7f8c8d;">Всего проблем</div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Генерация цепочки логистики

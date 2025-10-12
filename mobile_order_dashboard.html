@@ -75,8 +75,7 @@
         }
 
         .user-role {
-            font-size: 12px;
-            color: #7f8c8d;
+            display: none; /* Убираем отображение роли */
         }
 
         .logout-btn {
@@ -99,6 +98,64 @@
             margin-top: 80px;
             padding: 20px;
             min-height: calc(100vh - 140px);
+        }
+
+        /* Поиск */
+        .search-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            position: relative;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-input-container {
+            position: relative;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 18px;
+            pointer-events: none;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Навигация между разделами */
@@ -149,6 +206,102 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
+            position: relative;
+        }
+        
+        /* Свайп-навигация для мобильных */
+        .swipe-navigation {
+            display: none;
+            position: relative;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+        
+        .swipe-container {
+            display: flex;
+            gap: 15px;
+            padding: 0 15px;
+        }
+        
+        .swipe-column {
+            flex: 0 0 85vw;
+            max-width: 400px;
+            scroll-snap-align: start;
+        }
+        
+        /* Уведомления и загрузка */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #3498db;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 300px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #ecf0f1;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .section-column {
@@ -439,7 +592,11 @@
         /* Адаптивность */
         @media (max-width: 768px) {
             .dashboard-container {
-                grid-template-columns: 1fr;
+                display: none; /* Скрываем обычную сетку на мобильных */
+            }
+            
+            .swipe-navigation {
+                display: block; /* Показываем свайп-навигацию на мобильных */
             }
             
             .section-tabs {
@@ -449,6 +606,20 @@
             .section-tab {
                 font-size: 11px;
                 padding: 10px 6px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .search-container {
+                margin-bottom: 15px;
+                padding: 12px;
+            }
+            
+            .notification {
+                right: 10px;
+                max-width: calc(100vw - 40px);
             }
         }
 
@@ -661,6 +832,166 @@
             font-size: 12px;
             color: #7f8c8d;
         }
+        
+        /* Кнопка "Есть нюансы" */
+        .order-detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .issue-btn {
+            flex: 1;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .issue-btn:hover {
+            background: #c0392b;
+        }
+        
+        .issue-btn.has-issue {
+            background: #f39c12;
+        }
+        
+        .issue-btn.has-issue:hover {
+            background: #e67e22;
+        }
+        
+        /* Модальное окно для добавления проблемы */
+        .issue-modal {
+            display: none;
+            position: fixed;
+            z-index: 2001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+        
+        .issue-modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .issue-modal-header {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .issue-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .close-issue-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .issue-modal-body {
+            padding: 20px;
+        }
+        
+        .issue-form-group {
+            margin-bottom: 20px;
+        }
+        
+        .issue-form-label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .issue-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .issue-textarea:focus {
+            outline: none;
+            border-color: #e74c3c;
+        }
+        
+        .issue-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .issue-save-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .issue-save-btn:hover {
+            background: #229954;
+        }
+        
+        .issue-cancel-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .issue-cancel-btn:hover {
+            background: #7f8c8d;
+        }
     </style>
 </head>
 <body>
@@ -704,7 +1035,23 @@
 
         <!-- Раздел дашборда -->
         <div id="dashboard-section" class="sections-container active">
-            <div class="dashboard-container">
+            <!-- Поиск по заказам -->
+            <div class="search-container">
+                <div class="search-input-container">
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск заказов по номеру, клиенту или товару...">
+                    <button class="clear-search" id="clearSearch" onclick="clearSearch()">×</button>
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+            
+            <!-- Свайп-навигация для мобильных -->
+            <div class="swipe-navigation" id="swipeNavigation">
+                <div class="swipe-container" id="swipeContainer">
+                    <!-- Колонки будут добавлены динамически -->
+                </div>
+            </div>
+            
+            <div class="dashboard-container" id="dashboardContainer">
                 <!-- Все заказы -->
                 <div class="section-column">
                     <div class="section-header">
@@ -890,6 +1237,49 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Действия с заказом -->
+            <div class="order-detail-actions">
+                <button class="issue-btn" id="issueBtn" onclick="openIssueModal()">
+                    ⚠️ Есть нюансы
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления проблемы -->
+    <div id="issueModal" class="issue-modal">
+        <div class="issue-modal-content">
+            <div class="issue-modal-header">
+                <h3 class="issue-modal-title">⚠️ Добавить проблему</h3>
+                <button class="close-issue-btn" onclick="closeIssueModal()">&times;</button>
+            </div>
+            
+            <div class="issue-modal-body">
+                <div class="issue-form-group">
+                    <label class="issue-form-label">Опишите проблему:</label>
+                    <textarea id="issueDescription" class="issue-textarea" placeholder="Подробно опишите возникшую проблему..."></textarea>
+                </div>
+                
+                <div class="issue-actions">
+                    <button class="issue-cancel-btn" onclick="closeIssueModal()">Отмена</button>
+                    <button class="issue-save-btn" onclick="saveIssue()">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Система уведомлений -->
+    <div id="notification" class="notification">
+        <span id="notificationIcon">ℹ️</span>
+        <span id="notificationMessage">Сообщение</span>
+    </div>
+
+    <!-- Загрузочный экран -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div id="loadingMessage">Выполняется операция...</div>
         </div>
     </div>
 
@@ -898,6 +1288,8 @@
         let currentUser = null;
         let selectedOrderId = null;
         let selectedSection = null;
+        let searchFilter = '';
+        let autoUpdateInterval = null;
 
         // Производственные участки
         const SECTIONS = {
@@ -918,7 +1310,7 @@
             document.getElementById('userAvatar').textContent = userData.firstName[0] + userData.lastName[0];
             
             // Показываем индикатор загрузки
-            showLoadingIndicator();
+            showLoading('Инициализация приложения...');
             
             try {
                 // Инициализируем данные заказов
@@ -927,43 +1319,203 @@
                 // Загружаем и отображаем заказы
                 loadOrders();
                 
+                // Инициализируем поиск
+                initializeSearch();
+                
+                // Запускаем автообновление
+                startAutoUpdate();
+                
+                showNotification('✅ Приложение готово к работе', 'success');
                 console.log('Приложение инициализировано для пользователя:', userData.fullName);
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
+                showNotification('❌ Ошибка инициализации: ' + error.message, 'error');
             } finally {
-                hideLoadingIndicator();
+                hideLoading();
             }
         }
 
-        // Показать индикатор загрузки
-        function showLoadingIndicator() {
-            const indicator = document.createElement('div');
-            indicator.id = 'loadingIndicator';
-            indicator.innerHTML = `
-                <div style="
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: white;
-                    padding: 20px;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-                    z-index: 10000;
-                    text-align: center;
-                ">
-                    <div style="font-size: 18px; margin-bottom: 10px;">📊 Загрузка заказов...</div>
-                    <div style="color: #7f8c8d;">Подождите, пожалуйста</div>
-                </div>
-            `;
-            document.body.appendChild(indicator);
+        // === СИСТЕМА УВЕДОМЛЕНИЙ И ЗАГРУЗКИ ===
+        
+        // Показать уведомление
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            // Иконки для разных типов
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            // Устанавливаем содержимое
+            icon.textContent = icons[type] || icons.info;
+            messageEl.textContent = message;
+            
+            // Устанавливаем класс типа
+            notification.className = `notification ${type}`;
+            
+            // Показываем уведомление
+            notification.classList.add('show');
+            
+            // Автоматически скрываем через указанное время
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
         }
-
-        // Скрыть индикатор загрузки
-        function hideLoadingIndicator() {
-            const indicator = document.getElementById('loadingIndicator');
-            if (indicator) {
-                indicator.remove();
+        
+        // Показать экран загрузки
+        function showLoading(message = 'Загрузка...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const messageEl = document.getElementById('loadingMessage');
+            messageEl.textContent = message;
+            overlay.style.display = 'flex';
+        }
+        
+        // Скрыть экран загрузки
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'none';
+        }
+        
+        // === СИСТЕМА ПОИСКА ===
+        
+        // Инициализация поиска
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            
+            searchInput.addEventListener('input', function(e) {
+                searchFilter = e.target.value.toLowerCase().trim();
+                
+                // Показываем/скрываем кнопку очистки
+                if (searchFilter) {
+                    clearBtn.style.display = 'flex';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+                
+                // Фильтруем заказы
+                filterOrders();
+            });
+            
+            // Поиск при нажатии Enter
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    filterOrders();
+                }
+            });
+        }
+        
+        // Очистка поиска
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            
+            searchInput.value = '';
+            searchFilter = '';
+            clearBtn.style.display = 'none';
+            
+            // Перезагружаем все заказы
+            loadOrders();
+            showNotification('🔍 Поиск сброшен', 'info', 1500);
+        }
+        
+        // Фильтрация заказов
+        function filterOrders() {
+            if (!searchFilter) {
+                loadOrders();
+                return;
+            }
+            
+            const orders = getOrdersFromStorage();
+            const filteredOrders = orders.filter(order => {
+                const searchFields = [
+                    order.number,
+                    order.client || order.manager,
+                    order.product || order.operationType,
+                    SECTIONS[order.currentSection]?.name || 'Новый заказ'
+                ].join(' ').toLowerCase();
+                
+                return searchFields.includes(searchFilter);
+            });
+            
+            // Отображаем отфильтрованные заказы
+            displayFilteredOrders(filteredOrders);
+            
+            const resultText = filteredOrders.length === 1 ? 'заказ' : 
+                              filteredOrders.length < 5 ? 'заказа' : 'заказов';
+            showNotification(`🔍 Найдено ${filteredOrders.length} ${resultText}`, 'info', 2000);
+        }
+        
+        // Отображение отфильтрованных заказов
+        function displayFilteredOrders(filteredOrders) {
+            // Очищаем все списки
+            clearAllOrderLists();
+            
+            // Счетчики
+            const counts = {
+                all: 0,
+                cutting: 0,
+                cleaning: 0,
+                welding: 0,
+                painting: 0,
+                warehouse: 0,
+                shipped: 0
+            };
+            
+            // Отображаем отфильтрованные заказы
+            filteredOrders.forEach(order => {
+                // Все заказы всегда показываются в "Все заказы"
+                const allOrdersContainer = document.getElementById('allOrdersList');
+                allOrdersContainer.appendChild(createOrderCard(order, true));
+                counts.all++;
+                
+                // Заказы в участках
+                if (order.currentSection) {
+                    const sectionContainer = document.getElementById(order.currentSection + 'List');
+                    if (sectionContainer) {
+                        sectionContainer.appendChild(createOrderCard(order, false));
+                        counts[order.currentSection]++;
+                    }
+                }
+            });
+            
+            // Обновляем счетчики
+            updateCounters(counts);
+            
+            // Обновляем свайп-навигацию для мобильных
+            updateSwipeNavigation(filteredOrders);
+        }
+        
+        // === АВТООБНОВЛЕНИЕ ===
+        
+        // Запуск автообновления
+        function startAutoUpdate() {
+            // Обновляем каждые 30 секунд
+            autoUpdateInterval = setInterval(async () => {
+                try {
+                    await loadOrdersFromCSV();
+                    if (!searchFilter) {
+                        loadOrders();
+                    } else {
+                        filterOrders();
+                    }
+                } catch (error) {
+                    console.error('Ошибка автообновления:', error);
+                }
+            }, 30000);
+        }
+        
+        // Остановка автообновления
+        function stopAutoUpdate() {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+                autoUpdateInterval = null;
             }
         }
 
@@ -1180,13 +1732,7 @@
             const orders = getOrdersFromStorage();
             
             // Очищаем все списки
-            document.getElementById('allOrdersList').innerHTML = '';
-            document.getElementById('cuttingList').innerHTML = '';
-            document.getElementById('cleaningList').innerHTML = '';
-            document.getElementById('weldingList').innerHTML = '';
-            document.getElementById('paintingList').innerHTML = '';
-            document.getElementById('warehouseList').innerHTML = '';
-            document.getElementById('shippedList').innerHTML = '';
+            clearAllOrderLists();
 
             // Счетчики для каждого раздела
             const counts = {
@@ -1217,6 +1763,28 @@
             });
 
             // Обновляем счетчики
+            updateCounters(counts);
+
+            // Показываем пустые разделы если нет заказов
+            showEmptySections(counts);
+            
+            // Обновляем свайп-навигацию для мобильных
+            updateSwipeNavigation(orders);
+        }
+        
+        // Очистка всех списков заказов
+        function clearAllOrderLists() {
+            document.getElementById('allOrdersList').innerHTML = '';
+            document.getElementById('cuttingList').innerHTML = '';
+            document.getElementById('cleaningList').innerHTML = '';
+            document.getElementById('weldingList').innerHTML = '';
+            document.getElementById('paintingList').innerHTML = '';
+            document.getElementById('warehouseList').innerHTML = '';
+            document.getElementById('shippedList').innerHTML = '';
+        }
+        
+        // Обновление счетчиков
+        function updateCounters(counts) {
             document.getElementById('allOrdersCount').textContent = counts.all;
             document.getElementById('cuttingCount').textContent = counts.cutting;
             document.getElementById('cleaningCount').textContent = counts.cleaning;
@@ -1224,9 +1792,101 @@
             document.getElementById('paintingCount').textContent = counts.painting;
             document.getElementById('warehouseCount').textContent = counts.warehouse;
             document.getElementById('shippedCount').textContent = counts.shipped;
+        }
+        
+        // Обновление свайп-навигации для мобильных
+        function updateSwipeNavigation(orders) {
+            const swipeContainer = document.getElementById('swipeContainer');
+            swipeContainer.innerHTML = '';
+            
+            // Создаем колонки для свайп-навигации
+            const sections = [
+                { key: 'all', name: 'Все заказы', icon: '📋', list: 'allOrdersList' },
+                { key: 'cutting', name: 'Резка', icon: '🔪', list: 'cuttingList' },
+                { key: 'cleaning', name: 'Зачистка/Травление', icon: '🧹', list: 'cleaningList' },
+                { key: 'welding', name: 'Сварка', icon: '⚡', list: 'weldingList' },
+                { key: 'painting', name: 'Покраска', icon: '🎨', list: 'paintingList' },
+                { key: 'warehouse', name: 'Склад', icon: '📦', list: 'warehouseList' },
+                { key: 'shipped', name: 'Отгружено', icon: '🚛', list: 'shippedList' }
+            ];
+            
+            sections.forEach(section => {
+                const sectionHTML = createSwipeSection(section, orders);
+                swipeContainer.innerHTML += sectionHTML;
+            });
+        }
+        
+        // Создание секции для свайп-навигации
+        function createSwipeSection(section, orders) {
+            let sectionOrders;
+            let count = 0;
+            
+            if (section.key === 'all') {
+                sectionOrders = orders;
+                count = orders.length;
+            } else {
+                sectionOrders = orders.filter(order => order.currentSection === section.key);
+                count = sectionOrders.length;
+            }
+            
+            let ordersHTML = '';
+            if (sectionOrders.length === 0) {
+                ordersHTML = `
+                    <div class="empty-section">
+                        <div class="icon">${section.icon}</div>
+                        <div class="text">Нет заказов</div>
+                        <div class="subtext">${section.key === 'all' ? 'Заказы появятся при загрузке' : 'Заказы появятся после перемещения'}</div>
+                    </div>
+                `;
+            } else {
+                sectionOrders.forEach(order => {
+                    ordersHTML += createOrderCardHTML(order, section.key !== 'all');
+                });
+            }
+            
+            return `
+                <div class="swipe-column section-column">
+                    <div class="section-header">
+                        <div class="section-title">
+                            ${section.icon} ${section.name}
+                            <span class="section-count">${count}</span>
+                        </div>
+                    </div>
+                    <div class="orders-list">
+                        ${ordersHTML}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Создание HTML карточки заказа для свайп-навигации
+        function createOrderCardHTML(order, hideMoveButton = false) {
+            const progress = calculateOrderProgress(order);
+            const currentSectionName = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
+            const priorityText = getPriorityText(order.priority);
+            const priorityClass = `priority-${order.priority || 'medium'}`;
 
-            // Показываем пустые разделы если нет заказов
-            showEmptySections(counts);
+            return `
+                <div class="order-card" data-order-id="${order.id}">
+                    <div class="order-header">
+                        <div class="order-number">${order.number}</div>
+                        <div class="priority-badge ${priorityClass}">${priorityText}</div>
+                    </div>
+                    <div class="order-client">👤 ${order.client || order.manager || 'Не указан'}</div>
+                    <div class="order-product">📦 ${order.product || order.operationType || 'Не указано'}</div>
+                    <div class="order-progress">
+                        <div class="progress-label">${currentSectionName}</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="progress-text">${progress}% завершено</div>
+                    </div>
+                    <div class="order-actions">
+                        ${!hideMoveButton ? `<button class="action-btn move-btn" onclick="openMoveModal('${order.id}')">Переместить</button>` : ''}
+                        <button class="action-btn details-btn" onclick="openOrderDetail('${order.id}')">Детали</button>
+                    </div>
+                </div>
+            `;
         }
 
         // Создание карточки заказа
@@ -1350,41 +2010,57 @@
         });
 
         // Подтверждение перемещения заказа
-        function confirmMoveOrder() {
+        async function confirmMoveOrder() {
             if (!selectedOrderId || !selectedSection) {
-                alert('Выберите участок для перемещения');
+                showNotification('⚠️ Выберите участок для перемещения', 'warning');
                 return;
             }
 
-            const orders = getOrdersFromStorage();
-            const orderIndex = orders.findIndex(o => o.id === selectedOrderId);
+            showLoading('Перемещение заказа...');
             
-            if (orderIndex !== -1) {
-                const order = orders[orderIndex];
+            try {
+                const orders = getOrdersFromStorage();
+                const orderIndex = orders.findIndex(o => o.id === selectedOrderId);
                 
-                // Обновляем данные заказа
-                order.currentSection = selectedSection;
-                order.progress = calculateOrderProgress(order);
-                
-                // Добавляем запись в историю
-                order.history.push({
-                    action: 'moved',
-                    section: selectedSection,
-                    sectionName: SECTIONS[selectedSection].name,
-                    timestamp: new Date().toISOString(),
-                    user: currentUser.fullName
-                });
-                
-                // Сохраняем изменения
-                saveOrdersToStorage(orders);
-                
-                // Обновляем интерфейс
-                loadOrders();
-                
-                // Закрываем модальное окно
-                closeModal();
-                
-                console.log(`Заказ ${order.number} перемещен на участок "${SECTIONS[selectedSection].name}"`);
+                if (orderIndex !== -1) {
+                    const order = orders[orderIndex];
+                    const oldSection = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
+                    const newSection = SECTIONS[selectedSection].name;
+                    
+                    // Обновляем данные заказа
+                    order.currentSection = selectedSection;
+                    order.progress = calculateOrderProgress(order);
+                    
+                    // Добавляем запись в историю
+                    order.history.push({
+                        action: 'moved',
+                        section: selectedSection,
+                        sectionName: newSection,
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.fullName
+                    });
+                    
+                    // Сохраняем изменения
+                    saveOrdersToStorage(orders);
+                    
+                    // Обновляем интерфейс
+                    if (searchFilter) {
+                        filterOrders();
+                    } else {
+                        loadOrders();
+                    }
+                    
+                    // Закрываем модальное окно
+                    closeModal();
+                    
+                    showNotification(`✅ Заказ ${order.number} перемещен: ${oldSection} → ${newSection}`, 'success');
+                    console.log(`Заказ ${order.number} перемещен на участок "${newSection}"`);
+                }
+            } catch (error) {
+                console.error('Ошибка перемещения заказа:', error);
+                showNotification('❌ Ошибка при перемещении заказа', 'error');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -1394,9 +2070,12 @@
             const order = orders.find(o => o.id === orderId);
             
             if (!order) {
-                alert('Заказ не найден');
+                showNotification('❌ Заказ не найден', 'error');
                 return;
             }
+
+            // Сохраняем ID для работы с кнопкой "Есть нюансы"
+            selectedOrderId = orderId;
 
             // Заполняем основную информацию
             document.getElementById('detailOrderTitle').textContent = `Заказ ${order.number}`;
@@ -1409,6 +2088,9 @@
             document.getElementById('detailStatus').textContent = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
             document.getElementById('detailProgress').textContent = `${calculateOrderProgress(order)}%`;
 
+            // Обновляем кнопку "Есть нюансы"
+            updateIssueButton(order);
+
             // Заполняем этапы производства
             renderDetailStages(order);
             
@@ -1420,10 +2102,124 @@
             
             console.log('📋 Открыта детализация заказа:', order.number);
         }
+        
+        // Обновление кнопки "Есть нюансы"
+        function updateIssueButton(order) {
+            const issueBtn = document.getElementById('issueBtn');
+            
+            if (order.issues && order.issues.length > 0) {
+                issueBtn.textContent = `⚠️ Есть нюансы (${order.issues.length})`;
+                issueBtn.classList.add('has-issue');
+            } else {
+                issueBtn.textContent = '⚠️ Есть нюансы';
+                issueBtn.classList.remove('has-issue');
+            }
+        }
 
         // Закрытие модального окна детализации
         function closeOrderDetail() {
             document.getElementById('orderDetailModal').classList.remove('active');
+            selectedOrderId = null;
+        }
+        
+        // === РАБОТА С ПРОБЛЕМАМИ ===
+        
+        // Открытие модального окна для добавления проблемы
+        function openIssueModal() {
+            if (!selectedOrderId) {
+                showNotification('❌ Заказ не выбран', 'error');
+                return;
+            }
+            
+            const orders = getOrdersFromStorage();
+            const order = orders.find(o => o.id === selectedOrderId);
+            
+            if (!order) {
+                showNotification('❌ Заказ не найден', 'error');
+                return;
+            }
+            
+            // Очищаем поле описания
+            document.getElementById('issueDescription').value = '';
+            
+            // Показываем модальное окно
+            document.getElementById('issueModal').style.display = 'block';
+        }
+        
+        // Закрытие модального окна проблем
+        function closeIssueModal() {
+            document.getElementById('issueModal').style.display = 'none';
+        }
+        
+        // Сохранение проблемы
+        async function saveIssue() {
+            const description = document.getElementById('issueDescription').value.trim();
+            
+            if (!description) {
+                showNotification('⚠️ Введите описание проблемы', 'warning');
+                return;
+            }
+            
+            if (!selectedOrderId) {
+                showNotification('❌ Заказ не выбран', 'error');
+                return;
+            }
+            
+            showLoading('Сохранение проблемы...');
+            
+            try {
+                const orders = getOrdersFromStorage();
+                const orderIndex = orders.findIndex(o => o.id === selectedOrderId);
+                
+                if (orderIndex !== -1) {
+                    const order = orders[orderIndex];
+                    
+                    // Инициализируем массив проблем если его нет
+                    if (!order.issues) {
+                        order.issues = [];
+                    }
+                    
+                    // Добавляем новую проблему
+                    const issue = {
+                        id: Date.now(),
+                        description: description,
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.fullName,
+                        resolved: false
+                    };
+                    
+                    order.issues.push(issue);
+                    
+                    // Добавляем запись в историю
+                    order.history.push({
+                        action: 'issue_added',
+                        section: order.currentSection,
+                        sectionName: order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ',
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.fullName,
+                        details: `Добавлена проблема: ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}`
+                    });
+                    
+                    // Сохраняем изменения
+                    saveOrdersToStorage(orders);
+                    
+                    // Обновляем кнопку "Есть нюансы"
+                    updateIssueButton(order);
+                    
+                    // Закрываем модальное окно
+                    closeIssueModal();
+                    
+                    showNotification('✅ Проблема добавлена и будет отражена в отчетах', 'success');
+                    console.log(`Добавлена проблема для заказа ${order.number}:`, description);
+                } else {
+                    throw new Error('Заказ не найден');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения проблемы:', error);
+                showNotification('❌ Ошибка при сохранении проблемы', 'error');
+            } finally {
+                hideLoading();
+            }
         }
 
         // Отображение этапов производства
@@ -1710,6 +2506,9 @@
         // Функция выхода из системы
         function logout() {
             if (confirm('Вы действительно хотите выйти из системы?')) {
+                // Останавливаем автообновление
+                stopAutoUpdate();
+                
                 // Удаляем данные пользователя
                 localStorage.removeItem('userProfile');
                 sessionStorage.removeItem('userProfile');
@@ -1723,6 +2522,7 @@
         window.onclick = function(event) {
             const moveModal = document.getElementById('moveOrderModal');
             const detailModal = document.getElementById('orderDetailModal');
+            const issueModal = document.getElementById('issueModal');
             
             if (event.target === moveModal) {
                 closeModal();
@@ -1731,7 +2531,44 @@
             if (event.target === detailModal) {
                 closeOrderDetail();
             }
+            
+            if (event.target === issueModal) {
+                closeIssueModal();
+            }
         }
+        
+        // Обработчик свайпов для мобильных устройств
+        let startX = 0;
+        let startY = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            if (!startX || !startY) {
+                return;
+            }
+            
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            
+            // Проверяем, что это горизонтальный свайп
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                const swipeContainer = document.getElementById('swipeContainer');
+                if (swipeContainer && window.innerWidth <= 768) {
+                    // Реализация свайп-навигации может быть добавлена здесь
+                    // пока оставляем базовую функциональность
+                }
+            }
+            
+            startX = 0;
+            startY = 0;
+        });
     </script>
 </body>
 </html>
