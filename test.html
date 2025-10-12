@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест системы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Панель тестирования системы</h1>
+    
+    <div class="test-panel">
+        <h3>🔐 Тесты авторизации</h3>
+        <button class="btn" onclick="clearAuth()">Очистить авторизацию</button>
+        <button class="btn" onclick="setTestUser()">Установить тестового пользователя</button>
+        <button class="btn" onclick="checkAuth()">Проверить авторизацию</button>
+        <div id="authStatus" class="status info">Нажмите "Проверить авторизацию"</div>
+    </div>
+
+    <div class="test-panel">
+        <h3>📦 Тесты данных заказов</h3>
+        <button class="btn" onclick="clearOrders()">Очистить заказы</button>
+        <button class="btn" onclick="createTestOrders()">Создать тестовые заказы</button>
+        <button class="btn" onclick="viewOrders()">Показать заказы</button>
+        <div id="ordersStatus" class="status info">Нажмите "Показать заказы"</div>
+    </div>
+
+    <div class="test-panel">
+        <h3>🔄 Тесты перемещений</h3>
+        <button class="btn" onclick="testMoveOrder()">Переместить заказ на "Резку"</button>
+        <button class="btn" onclick="testProgressCalculation()">Проверить расчет прогресса</button>
+        <div id="moveStatus" class="status info">Результаты тестов появятся здесь</div>
+    </div>
+
+    <div class="test-panel">
+        <h3>🚀 Быстрые переходы</h3>
+        <button class="btn" onclick="goToAuth()">→ Авторизация</button>
+        <button class="btn" onclick="goToDashboard()">→ Дашборд</button>
+        <button class="btn" onclick="goToReports()">→ Отчеты</button>
+        <button class="btn" onclick="goToDemo()">→ Демо</button>
+    </div>
+
+    <script>
+        // Производственные участки
+        const SECTIONS = {
+            cutting: { name: 'Резка', icon: '🔪', order: 1 },
+            cleaning: { name: 'Зачистка/Травление', icon: '🧹', order: 2 },
+            welding: { name: 'Сварка', icon: '⚡', order: 3 },
+            painting: { name: 'Покраска', icon: '🎨', order: 4 },
+            warehouse: { name: 'Склад', icon: '📦', order: 5 },
+            shipped: { name: 'Отгружено', icon: '🚛', order: 6 }
+        };
+
+        // Тесты авторизации
+        function clearAuth() {
+            localStorage.removeItem('userProfile');
+            sessionStorage.removeItem('userProfile');
+            document.getElementById('authStatus').innerHTML = '✅ Данные авторизации очищены';
+            document.getElementById('authStatus').className = 'status success';
+        }
+
+        function setTestUser() {
+            const testUser = {
+                firstName: 'Тест',
+                lastName: 'Пользователь',
+                fullName: 'Тест Пользователь',
+                loginTime: new Date().toISOString(),
+                rememberMe: true
+            };
+            
+            localStorage.setItem('userProfile', JSON.stringify(testUser));
+            document.getElementById('authStatus').innerHTML = '✅ Тестовый пользователь создан: ' + testUser.fullName;
+            document.getElementById('authStatus').className = 'status success';
+        }
+
+        function checkAuth() {
+            const userData = localStorage.getItem('userProfile') || sessionStorage.getItem('userProfile');
+            const statusEl = document.getElementById('authStatus');
+            
+            if (userData) {
+                const user = JSON.parse(userData);
+                statusEl.innerHTML = '✅ Пользователь авторизован: ' + user.fullName + '<br>Время входа: ' + new Date(user.loginTime).toLocaleString('ru-RU');
+                statusEl.className = 'status success';
+            } else {
+                statusEl.innerHTML = '❌ Пользователь не авторизован';
+                statusEl.className = 'status info';
+            }
+        }
+
+        // Тесты заказов
+        function clearOrders() {
+            localStorage.removeItem('ordersData');
+            document.getElementById('ordersStatus').innerHTML = '✅ Данные заказов очищены';
+            document.getElementById('ordersStatus').className = 'status success';
+        }
+
+        function createTestOrders() {
+            const testOrders = [
+                {
+                    id: 'TEST001',
+                    number: 'TEST-001',
+                    client: 'ООО "ТестКомпания"',
+                    product: 'Тестовая металлоконструкция',
+                    date: '2024-10-11',
+                    currentSection: null,
+                    progress: 0,
+                    history: [
+                        {
+                            action: 'created',
+                            section: null,
+                            timestamp: new Date().toISOString(),
+                            user: 'Тест Пользователь'
+                        }
+                    ]
+                },
+                {
+                    id: 'TEST002',
+                    number: 'TEST-002',
+                    client: 'ИП Тестов А.А.',
+                    product: 'Тестовые ворота',
+                    date: '2024-10-11',
+                    currentSection: 'cutting',
+                    progress: 17,
+                    history: [
+                        {
+                            action: 'created',
+                            section: null,
+                            timestamp: new Date(Date.now() - 3600000).toISOString(),
+                            user: 'Тест Пользователь'
+                        },
+                        {
+                            action: 'moved',
+                            section: 'cutting',
+                            sectionName: 'Резка',
+                            timestamp: new Date().toISOString(),
+                            user: 'Тест Пользователь'
+                        }
+                    ]
+                }
+            ];
+            
+            localStorage.setItem('ordersData', JSON.stringify(testOrders));
+            document.getElementById('ordersStatus').innerHTML = '✅ Создано ' + testOrders.length + ' тестовых заказа';
+            document.getElementById('ordersStatus').className = 'status success';
+        }
+
+        function viewOrders() {
+            const ordersData = localStorage.getItem('ordersData');
+            const statusEl = document.getElementById('ordersStatus');
+            
+            if (ordersData) {
+                const orders = JSON.parse(ordersData);
+                let info = `✅ Найдено ${orders.length} заказов:<br>`;
+                
+                orders.forEach(order => {
+                    const currentSection = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
+                    info += `• ${order.number} - ${order.product} (${currentSection}, ${order.progress}%)<br>`;
+                });
+                
+                statusEl.innerHTML = info;
+                statusEl.className = 'status success';
+            } else {
+                statusEl.innerHTML = '❌ Заказы не найдены';
+                statusEl.className = 'status info';
+            }
+        }
+
+        // Тесты перемещений
+        function testMoveOrder() {
+            const ordersData = localStorage.getItem('ordersData');
+            const statusEl = document.getElementById('moveStatus');
+            
+            if (!ordersData) {
+                statusEl.innerHTML = '❌ Сначала создайте тестовые заказы';
+                statusEl.className = 'status info';
+                return;
+            }
+            
+            const orders = JSON.parse(ordersData);
+            const order = orders.find(o => !o.currentSection);
+            
+            if (!order) {
+                statusEl.innerHTML = '❌ Нет заказов для перемещения (все уже перемещены)';
+                statusEl.className = 'status info';
+                return;
+            }
+            
+            // Перемещаем заказ на резку
+            order.currentSection = 'cutting';
+            order.progress = Math.round((SECTIONS.cutting.order / Object.keys(SECTIONS).length) * 100);
+            order.history.push({
+                action: 'moved',
+                section: 'cutting',
+                sectionName: 'Резка',
+                timestamp: new Date().toISOString(),
+                user: 'Тест Пользователь'
+            });
+            
+            localStorage.setItem('ordersData', JSON.stringify(orders));
+            
+            statusEl.innerHTML = `✅ Заказ ${order.number} перемещен на "Резка" (${order.progress}% прогресса)`;
+            statusEl.className = 'status success';
+        }
+
+        function testProgressCalculation() {
+            const statusEl = document.getElementById('moveStatus');
+            let info = '✅ Тест расчета прогресса:<br>';
+            
+            Object.keys(SECTIONS).forEach(sectionKey => {
+                const section = SECTIONS[sectionKey];
+                const progress = Math.round((section.order / Object.keys(SECTIONS).length) * 100);
+                info += `• ${section.name}: ${progress}%<br>`;
+            });
+            
+            statusEl.innerHTML = info;
+            statusEl.className = 'status success';
+        }
+
+        // Быстрые переходы
+        function goToAuth() {
+            window.open('auth.html', '_blank');
+        }
+
+        function goToDashboard() {
+            window.open('mobile_order_dashboard.html', '_blank');
+        }
+
+        function goToReports() {
+            window.open('reports.html', '_blank');
+        }
+
+        function goToDemo() {
+            window.open('full_app_demo.html', '_blank');
+        }
+
+        // Автоматическая проверка при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            viewOrders();
+        });
+    </script>
+</body>
+</html>

@@ -808,5 +808,38 @@
             setTimeout(animateCounters, 500);
         });
     </script>
+
+    <!-- Проверка авторизации -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('userProfile') || sessionStorage.getItem('userProfile');
+            if (!userData) {
+                // Показываем предупреждение для неавторизованных пользователей
+                const warning = document.createElement('div');
+                warning.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #f39c12;
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    z-index: 9999;
+                    font-weight: 600;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                `;
+                warning.innerHTML = '⚠️ Это демо-режим. <a href="auth.html" style="color: white; text-decoration: underline;">Войдите в систему</a> для полного функционала';
+                document.body.appendChild(warning);
+                
+                // Скрываем предупреждение через 5 секунд
+                setTimeout(() => {
+                    warning.style.transition = 'opacity 0.5s ease';
+                    warning.style.opacity = '0';
+                    setTimeout(() => warning.remove(), 500);
+                }, 5000);
+            }
+        });
+    </script>
 </body>
 </html>

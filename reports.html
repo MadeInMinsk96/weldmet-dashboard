@@ -2,807 +2,529 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Отчеты - Управление заказами</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчеты - Система управления заказами</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            padding: 20px;
         }
 
-        /* Шапка приложения */
-        .app-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1001;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .reports-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .report-card {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+
+        .report-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
         }
 
-        .app-title {
-            font-size: 20px;
+        .order-title {
+            font-size: 1.4rem;
             font-weight: 700;
             color: #2c3e50;
-            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .back-button {
-            background: rgba(102, 126, 234, 0.1);
-            border: 2px solid rgba(102, 126, 234, 0.3);
-            border-radius: 10px;
-            padding: 8px 16px;
-            font-size: 14px;
+        .order-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .order-info {
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .info-label {
             font-weight: 600;
-            color: #667eea;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
+            color: #34495e;
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: #2c3e50;
+        }
+
+        .current-status {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .logistics-chain {
+            margin-top: 20px;
+        }
+
+        .chain-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .back-button:hover {
-            background: #667eea;
-            border-color: #667eea;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Основной контент */
-        .main-content {
-            margin-top: 80px;
-            padding: 20px;
-            min-height: calc(100vh - 80px);
-        }
-
-        /* Навигация по разделам */
-        .section-navigation {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .section-navigation::-webkit-scrollbar {
-            display: none;
-        }
-
-        .section-button {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            border-radius: 15px;
-            padding: 12px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #2c3e50;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .section-button.active {
-            background: white;
-            border-color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .section-button .count {
-            margin-left: 8px;
-            background: rgba(102, 126, 234, 0.2);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            color: #667eea;
-        }
-
-        /* Контейнер отчетов */
-        .reports-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
+        .chain-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        /* Карточки проблем */
-        .problem-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
-            border-left: 4px solid #e74c3c;
         }
 
-        .problem-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        .chain-item.completed {
+            background: #d5f4e6;
+            color: #27ae60;
+            border-left: 4px solid #27ae60;
         }
 
-        /* Карточки логистики */
-        .movement-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
-        }
-
-        .movement-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-
-        .movement-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .movement-order {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-
-        .movement-timestamp {
-            font-size: 12px;
-            color: #657786;
-            text-align: right;
-        }
-
-        .movement-info {
-            margin-bottom: 10px;
-        }
-
-        .movement-user {
-            font-size: 14px;
-            color: #667eea;
+        .chain-item.current {
+            background: #fef9e7;
+            color: #f39c12;
+            border-left: 4px solid #f39c12;
             font-weight: 600;
-            margin-bottom: 5px;
         }
 
-        .movement-details {
-            font-size: 13px;
-            color: #657786;
-            margin-bottom: 5px;
-        }
-
-        .movement-flow {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
+        .chain-item.pending {
             background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            color: #7f8c8d;
+            border-left: 4px solid #ecf0f1;
         }
 
-        .stage-box {
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .stage-from {
-            background: #fee;
-            color: #c53030;
-        }
-
-        .stage-to {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .arrow {
-            font-size: 18px;
-            color: #667eea;
-        }
-
-        /* Стили для комментариев в логистике */
-        .movement-comment {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 10px;
-            background: #f0f8ff;
-            border-radius: 8px;
-            border-left: 3px solid #4a90e2;
-            margin-top: 10px;
-        }
-
-        .comment-icon {
-            font-size: 16px;
-            margin-top: 2px;
-        }
-
-        .comment-text {
-            font-size: 14px;
-            color: #2c3e50;
-            line-height: 1.4;
-            word-break: break-word;
-        }
-
-        .problem-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .problem-order {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-
-        .problem-timestamp {
-            font-size: 12px;
-            color: #657786;
-            text-align: right;
-        }
-
-        .problem-info {
-            margin-bottom: 10px;
-        }
-
-        .problem-reporter {
-            font-size: 14px;
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .problem-stage {
-            font-size: 13px;
-            color: #657786;
-            margin-bottom: 5px;
-        }
-
-        .problem-description {
-            font-size: 14px;
-            color: #2c3e50;
-            line-height: 1.4;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .problem-status {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-new {
-            background: #fee;
-            color: #c53030;
-        }
-
-        .status-in-progress {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-resolved {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        /* Пустое состояние */
-        .empty-state {
+        .chain-icon {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            width: 20px;
             text-align: center;
-            padding: 40px 20px;
-            color: #657786;
         }
 
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
+        .chain-text {
+            flex: 1;
         }
 
-        .empty-text {
-            font-size: 16px;
+        .chain-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+
+        .empty-reports {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        .empty-reports .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-reports .text {
+            font-size: 1.2rem;
             margin-bottom: 10px;
         }
 
-        .empty-subtext {
-            font-size: 14px;
+        .empty-reports .subtext {
+            font-size: 1rem;
             opacity: 0.7;
         }
 
-        /* Счетчики статистики */
-        .stats-container {
+        .stats-overview {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
         }
 
         .stat-number {
-            font-size: 24px;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #657786;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
         }
 
-        /* Анимации */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .problem-card {
-            animation: fadeInUp 0.3s ease forwards;
-        }
-
-        .problem-card:nth-child(even) {
-            animation-delay: 0.1s;
-        }
-
-        .problem-card:nth-child(odd) {
-            animation-delay: 0.05s;
-        }
-
-        /* Адаптивность */
         @media (max-width: 768px) {
-            .main-content {
-                padding: 15px;
+            .header h1 {
+                font-size: 2rem;
             }
             
-            .problem-header {
+            .report-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .info-row {
                 flex-direction: column;
                 gap: 5px;
             }
             
-            .problem-timestamp {
-                text-align: left;
-            }
-            
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
+            .info-label {
+                width: auto;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Шапка приложения -->
-    <div class="app-header">
-        <h1 class="app-title">📊 Отчеты</h1>
-        <a href="mobile_order_dashboard.html" class="back-button">
-            ← Назад к заказам
+    <!-- Проверка авторизации -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('userProfile') || sessionStorage.getItem('userProfile');
+            if (!userData) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            loadReports();
+        });
+    </script>
+
+    <div class="container">
+        <a href="mobile_order_dashboard.html" class="back-btn">
+            ← Вернуться к дашборду
         </a>
-    </div>
-
-    <!-- Основной контент -->
-    <div class="main-content">
-        <!-- Навигация по разделам -->
-        <div class="section-navigation">
-            <button class="section-button active" data-section="problems">
-                ⚠️ Проблемы <span class="count" id="problemsCount">0</span>
-            </button>
-            <button class="section-button" data-section="logistics">
-                📦 Логистика <span class="count" id="logisticsCount">0</span>
-            </button>
-            <button class="section-button" data-section="analytics">
-                📈 Аналитика <span class="count" id="analyticsCount">-</span>
-            </button>
-            <button class="section-button" data-section="history">
-                📋 История <span class="count" id="historyCount">-</span>
-            </button>
+        
+        <div class="header">
+            <h1>📊 Отчеты по заказам</h1>
+            <p>Детальная информация о движении заказов по производственным участкам</p>
         </div>
 
-        <!-- Контейнер отчетов -->
-        <div class="reports-container">
-            <!-- Раздел проблем -->
-            <div id="problemsSection" class="report-section active">
-                <div class="section-title">
-                    ⚠️ Сообщения о проблемах
-                </div>
+        <!-- Общая статистика -->
+        <div class="stats-overview" id="statsOverview"></div>
 
-                <!-- Статистика проблем -->
-                <div class="stats-container">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalProblems">0</div>
-                        <div class="stat-label">Всего проблем</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="newProblems">0</div>
-                        <div class="stat-label">Новые</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="activeProblems">0</div>
-                        <div class="stat-label">В работе</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="resolvedProblems">0</div>
-                        <div class="stat-label">Решены</div>
-                    </div>
-                </div>
-
-                <!-- Список проблем -->
-                <div id="problemsList">
-                    <!-- Проблемы будут загружены динамически -->
-                </div>
-            </div>
-
-            <!-- Раздел логистики заказов -->
-            <div id="logisticsSection" class="report-section" style="display: none;">
-                <div class="section-title">
-                    📦 Логистика заказов
-                </div>
-
-                <!-- Статистика перемещений -->
-                <div class="stats-container">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalMovements">0</div>
-                        <div class="stat-label">Всего перемещений</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="todayMovements">0</div>
-                        <div class="stat-label">Сегодня</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="activeOrders">0</div>
-                        <div class="stat-label">Заказов в работе</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="completedOrders">0</div>
-                        <div class="stat-label">На складе</div>
-                    </div>
-                </div>
-
-                <!-- Список перемещений -->
-                <div id="movementsList">
-                    <!-- Перемещения будут загружены динамически -->
-                </div>
-            </div>
-
-            <!-- Раздел аналитики (заглушка) -->
-            <div id="analyticsSection" class="report-section" style="display: none;">
-                <div class="section-title">
-                    📈 Аналитика производства
-                </div>
-                <div class="empty-state">
-                    <div class="empty-icon">📊</div>
-                    <div class="empty-text">Аналитика в разработке</div>
-                    <div class="empty-subtext">Этот раздел будет добавлен в следующих версиях</div>
-                </div>
-            </div>
-
-            <!-- Раздел истории (заглушка) -->
-            <div id="historySection" class="report-section" style="display: none;">
-                <div class="section-title">
-                    📋 История операций
-                </div>
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <div class="empty-text">История в разработке</div>
-                    <div class="empty-subtext">Этот раздел будет добавлен в следующих версиях</div>
-                </div>
-            </div>
-        </div>
+        <!-- Отчеты по заказам -->
+        <div class="reports-grid" id="reportsContainer"></div>
     </div>
 
     <script>
-        // Инициализация приложения
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeReports();
-            setupSectionNavigation();
-        });
+        // Производственные участки
+        const SECTIONS = {
+            cutting: { name: 'Резка', icon: '🔪', order: 1 },
+            cleaning: { name: 'Зачистка/Травление', icon: '🧹', order: 2 },
+            welding: { name: 'Сварка', icon: '⚡', order: 3 },
+            painting: { name: 'Покраска', icon: '🎨', order: 4 },
+            warehouse: { name: 'Склад', icon: '📦', order: 5 },
+            shipped: { name: 'Отгружено', icon: '🚛', order: 6 }
+        };
 
-        // Инициализация отчетов
-        function initializeReports() {
-            console.log('📊 Инициализация страницы отчетов...');
-            loadProblemsReports();
-            loadLogisticsReports();
+        // Получение заказов из localStorage
+        function getOrdersFromStorage() {
+            const ordersData = localStorage.getItem('ordersData');
+            return ordersData ? JSON.parse(ordersData) : [];
         }
 
-        // Настройка навигации по разделам
-        function setupSectionNavigation() {
-            const sectionButtons = document.querySelectorAll('.section-button');
+        // Расчет прогресса заказа
+        function calculateOrderProgress(order) {
+            if (!order.currentSection) return 0;
             
-            sectionButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const sectionName = button.dataset.section;
-                    switchToSection(sectionName);
+            const sectionOrder = SECTIONS[order.currentSection].order;
+            const totalSections = Object.keys(SECTIONS).length;
+            
+            return Math.round((sectionOrder / totalSections) * 100);
+        }
+
+        // Форматирование даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Форматирование времени
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Загрузка отчетов
+        function loadReports() {
+            const orders = getOrdersFromStorage();
+            
+            // Показываем статистику
+            showStatistics(orders);
+            
+            // Показываем отчеты по заказам
+            showOrderReports(orders);
+        }
+
+        // Показ общей статистики
+        function showStatistics(orders) {
+            const stats = {
+                total: orders.length,
+                inProgress: orders.filter(o => o.currentSection && o.currentSection !== 'shipped').length,
+                completed: orders.filter(o => o.currentSection === 'shipped').length,
+                new: orders.filter(o => !o.currentSection).length
+            };
+
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Всего заказов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚙️</div>
+                    <div class="stat-number">${stats.inProgress}</div>
+                    <div class="stat-label">В производстве</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-number">${stats.completed}</div>
+                    <div class="stat-label">Отгружено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-number">${stats.new}</div>
+                    <div class="stat-label">Новые заказы</div>
+                </div>
+            `;
+
+            document.getElementById('statsOverview').innerHTML = statsHTML;
+        }
+
+        // Показ отчетов по заказам
+        function showOrderReports(orders) {
+            const reportsContainer = document.getElementById('reportsContainer');
+            
+            if (orders.length === 0) {
+                reportsContainer.innerHTML = `
+                    <div class="empty-reports">
+                        <div class="icon">📋</div>
+                        <div class="text">Нет заказов для отчета</div>
+                        <div class="subtext">Создайте первый заказ в дашборде</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let reportsHTML = '';
+            
+            orders.forEach(order => {
+                const progress = calculateOrderProgress(order);
+                const currentSectionName = order.currentSection ? SECTIONS[order.currentSection].name : 'Новый заказ';
+                
+                reportsHTML += `
+                    <div class="report-card">
+                        <div class="report-header">
+                            <div class="order-title">
+                                📦 ${order.number} - ${order.product}
+                            </div>
+                            <div class="order-date">${formatDate(order.date)}</div>
+                        </div>
+                        
+                        <div class="order-info">
+                            <div class="info-row">
+                                <span class="info-label">Клиент:</span>
+                                <span class="info-value">${order.client}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Товар:</span>
+                                <span class="info-value">${order.product}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Дата заказа:</span>
+                                <span class="info-value">${formatDate(order.date)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="current-status">
+                            <div class="status-title">Текущий участок: ${currentSectionName}</div>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                                <div class="progress-text">${progress}% завершено</div>
+                            </div>
+                        </div>
+                        
+                        <div class="logistics-chain">
+                            <div class="chain-title">
+                                🔄 Цепочка логистики
+                            </div>
+                            ${generateLogisticsChain(order)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reportsContainer.innerHTML = reportsHTML;
+        }
+
+        // Генерация цепочки логистики
+        function generateLogisticsChain(order) {
+            let chainHTML = '';
+            const sectionKeys = Object.keys(SECTIONS);
+            
+            sectionKeys.forEach(sectionKey => {
+                const section = SECTIONS[sectionKey];
+                const historyItem = order.history.find(h => h.section === sectionKey);
+                
+                if (historyItem) {
+                    const isCurrentSection = order.currentSection === sectionKey;
+                    const className = isCurrentSection ? 'current' : 'completed';
+                    const icon = isCurrentSection ? '🟡' : '✅';
+                    const statusText = isCurrentSection ? ' - текущий' : '';
+                    const timeText = formatDateTime(historyItem.timestamp);
                     
-                    // Обновляем активную кнопку
-                    sectionButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                });
-            });
-        }
-
-        // Переключение между разделами
-        function switchToSection(sectionName) {
-            // Скрываем все разделы
-            document.querySelectorAll('.report-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Показываем нужный раздел
-            const targetSection = document.getElementById(sectionName + 'Section');
-            if (targetSection) {
-                targetSection.style.display = 'block';
-                
-                // Загружаем данные для активного раздела
-                if (sectionName === 'logistics') {
-                    loadLogisticsReports();
+                    chainHTML += `
+                        <div class="chain-item ${className}">
+                            <span class="chain-icon">${icon}</span>
+                            <span class="chain-text">Перемещен на ${section.name}${statusText}</span>
+                            <span class="chain-time">${timeText}</span>
+                        </div>
+                    `;
+                } else {
+                    chainHTML += `
+                        <div class="chain-item pending">
+                            <span class="chain-icon">⚪</span>
+                            <span class="chain-text">${section.name}</span>
+                            <span class="chain-time">Ожидание</span>
+                        </div>
+                    `;
                 }
-            }
-            
-            console.log(`📋 Переключение на раздел: ${sectionName}`);
-        }
-
-        // Загрузка отчетов о проблемах
-        function loadProblemsReports() {
-            const problemsList = document.getElementById('problemsList');
-            const reports = JSON.parse(localStorage.getItem('weldmet_problem_reports') || '[]');
-            
-            console.log(`📥 Загружено ${reports.length} отчетов о проблемах`);
-            
-            // Обновляем статистику
-            updateProblemsStatistics(reports);
-            
-            // Очищаем контейнер
-            problemsList.innerHTML = '';
-            
-            if (reports.length === 0) {
-                problemsList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">✅</div>
-                        <div class="empty-text">Проблем не обнаружено</div>
-                        <div class="empty-subtext">Все заказы выполняются без сложностей</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Отображаем отчеты
-            reports.forEach((report, index) => {
-                const problemCard = createProblemCard(report);
-                problemCard.style.animationDelay = `${index * 0.05}s`;
-                problemsList.appendChild(problemCard);
             });
+            
+            return chainHTML;
         }
-
-        // Создание карточки проблемы
-        function createProblemCard(report) {
-            const card = document.createElement('div');
-            card.className = 'problem-card';
-            
-            const statusText = getStatusText(report.status);
-            const stageText = getStageDisplayName(report.orderStage);
-            
-            card.innerHTML = `
-                <div class="problem-header">
-                    <div class="problem-order">Заказ ${report.orderNumber}</div>
-                    <div class="problem-timestamp">${report.timestamp}</div>
-                </div>
-                
-                <div class="problem-info">
-                    <div class="problem-reporter">👤 Сообщил: ${report.reportedBy}</div>
-                    <div class="problem-stage">🔧 Этап: ${stageText}</div>
-                    ${report.orderManager ? `<div class="problem-stage">👨‍💼 Менеджер: ${report.orderManager}</div>` : ''}
-                </div>
-                
-                <div class="problem-description">${report.description}</div>
-                
-                <span class="problem-status status-${report.status}">${statusText}</span>
-            `;
-            
-            return card;
-        }
-
-        // Обновление статистики проблем
-        function updateProblemsStatistics(reports) {
-            const total = reports.length;
-            const newProblems = reports.filter(r => r.status === 'new').length;
-            const activeProblems = reports.filter(r => r.status === 'in-progress').length;
-            const resolvedProblems = reports.filter(r => r.status === 'resolved').length;
-            
-            document.getElementById('totalProblems').textContent = total;
-            document.getElementById('newProblems').textContent = newProblems;
-            document.getElementById('activeProblems').textContent = activeProblems;
-            document.getElementById('resolvedProblems').textContent = resolvedProblems;
-            document.getElementById('problemsCount').textContent = total;
-            
-            console.log(`📊 Статистика проблем - Всего: ${total}, Новые: ${newProblems}, В работе: ${activeProblems}, Решены: ${resolvedProblems}`);
-        }
-
-        // Получение текста статуса
-        function getStatusText(status) {
-            const statusTexts = {
-                'new': 'Новая',
-                'in-progress': 'В работе',
-                'resolved': 'Решена'
-            };
-            return statusTexts[status] || 'Неизвестно';
-        }
-
-        // Получение названия этапа для отображения
-        function getStageDisplayName(stage) {
-            const names = {
-                cutting: 'Резка',
-                cleaning: 'Зачистка/травление',
-                bending: 'Гибка',
-                welding: 'Сварка',
-                painting: 'Покраска',
-                storage: 'Склад'
-            };
-            return names[stage] || stage;
-        }
-
-        // ========== ФУНКЦИИ РАБОТЫ С ЛОГИСТИКОЙ ==========
-
-        // Загрузка отчетов по логистике
-        function loadLogisticsReports() {
-            const movementsList = document.getElementById('movementsList');
-            const movements = JSON.parse(localStorage.getItem('weldmet_movement_logs') || '[]');
-            
-            console.log(`📦 Загружено ${movements.length} записей о перемещениях`);
-            
-            // Обновляем статистику
-            updateLogisticsStatistics(movements);
-            
-            // Очищаем контейнер
-            movementsList.innerHTML = '';
-            
-            if (movements.length === 0) {
-                movementsList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📦</div>
-                        <div class="empty-text">Перемещений не найдено</div>
-                        <div class="empty-subtext">Пока нет записей о перемещении заказов</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Отображаем перемещения
-            movements.forEach((movement, index) => {
-                const movementCard = createMovementCard(movement);
-                movementCard.style.animationDelay = `${index * 0.05}s`;
-                movementsList.appendChild(movementCard);
-            });
-        }
-
-        // Создание карточки перемещения
-        function createMovementCard(movement) {
-            const card = document.createElement('div');
-            card.className = 'movement-card';
-            
-            const commentSection = movement.comment ? `
-                <div class="movement-comment">
-                    <div class="comment-icon">💬</div>
-                    <div class="comment-text">${movement.comment}</div>
-                </div>
-            ` : '';
-            
-            card.innerHTML = `
-                <div class="movement-header">
-                    <div class="movement-order">Заказ ${movement.orderNumber}</div>
-                    <div class="movement-timestamp">${movement.timestamp}</div>
-                </div>
-                
-                <div class="movement-info">
-                    <div class="movement-user">👤 Переместил: ${movement.movedBy}</div>
-                    <div class="movement-details">👨‍💼 Менеджер: ${movement.orderManager}</div>
-                    <div class="movement-details">🔧 Тип: ${movement.operationType}</div>
-                </div>
-                
-                <div class="movement-flow">
-                    <div class="stage-box stage-from">${movement.fromStageName}</div>
-                    <div class="arrow">→</div>
-                    <div class="stage-box stage-to">${movement.toStageName}</div>
-                </div>
-                
-                ${commentSection}
-            `;
-            
-            return card;
-        }
-
-        // Обновление статистики логистики
-        function updateLogisticsStatistics(movements) {
-            const total = movements.length;
-            
-            // Подсчет перемещений за сегодня
-            const today = new Date().toLocaleDateString('ru-RU');
-            const todayMovements = movements.filter(m => 
-                m.timestamp.split(',')[0] === today
-            ).length;
-            
-            // Подсчет уникальных заказов
-            const uniqueOrders = [...new Set(movements.map(m => m.orderNumber))];
-            const activeOrders = uniqueOrders.filter(orderNum => {
-                const lastMovement = movements
-                    .filter(m => m.orderNumber === orderNum)
-                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-                return lastMovement && lastMovement.toStage !== 'storage';
-            }).length;
-            
-            const completedOrders = uniqueOrders.length - activeOrders;
-            
-            document.getElementById('totalMovements').textContent = total;
-            document.getElementById('todayMovements').textContent = todayMovements;
-            document.getElementById('activeOrders').textContent = activeOrders;
-            document.getElementById('completedOrders').textContent = completedOrders;
-            document.getElementById('logisticsCount').textContent = total;
-            
-            console.log(`📊 Статистика логистики - Всего: ${total}, Сегодня: ${todayMovements}, В работе: ${activeOrders}, На складе: ${completedOrders}`);
-        }
-
-        // Автообновление каждые 30 секунд
-        setInterval(() => {
-            loadProblemsReports();
-            loadLogisticsReports();
-            console.log('🔄 Автообновление отчетов...');
-        }, 30000);
     </script>
 </body>
 </html>
